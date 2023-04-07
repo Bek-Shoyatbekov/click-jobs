@@ -83,7 +83,7 @@ app.use(async (req, res, next) => {
 
 app.use('/auth', require('./routes/auth'));
 
-app.use('/me', require('./routes/user'));
+app.use('/me', require('./routes/user.js'));
 
 
 
