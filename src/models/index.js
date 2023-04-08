@@ -43,6 +43,5 @@ db.user = require('./user.model')(sequelize, DataTypes, Sequelize);
 db.token = require('./token.model')(sequelize, DataTypes, Sequelize);
 db.req = require('./req.model')(sequelize, DataTypes, Sequelize);
 db.job = require('./job.model')(sequelize, DataTypes, Sequelize);
-db.company = require('./company.model')(sequelize, DataTypes, Sequelize);
 
 module.exports = db;

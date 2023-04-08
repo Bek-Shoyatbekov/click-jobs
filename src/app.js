@@ -21,15 +21,12 @@ const app = express();
 
 
 const User = db.user;
-const Company = db.company;
 const Token = db.token;
 const Job = db.job;
 const Req = db.req;
 
 
 //Relations
-User.hasOne(Company, { onDelete: 'cascade' });
-Company.hasOne(User);
 
 User.hasOne(Token, { onDelete: 'cascade' });
 Token.hasOne(User);

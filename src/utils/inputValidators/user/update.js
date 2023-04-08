@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const signupSchema = Joi
+const updateSchema = Joi
     .object()
     .keys({
         username: Joi
@@ -8,29 +8,25 @@ const signupSchema = Joi
             .alphanum()
             .min(3)
             .max(50)
-            .trim(true)
-            .required(),
+            .trim(true),
         email: Joi
             .string()
             .email()
             .trim(true)
-            .required(),
+        ,
         bio: Joi
             .string(),
         password: Joi
             .string()
-            .regex(/[a-z0-9]/)
             .min(5)
             .max(15)
-            .required()
         ,
         role: Joi
             .valid('user', 'aplicant')
-            .required()
 
     })
-const signUpInputValidator = (payload) => {
-    return signupSchema.validate(payload);
+const updateInputValidator = (payload) => {
+    return updateSchema.validate(payload);
 }
 
-module.exports = signUpInputValidator;
+module.exports = updateInputValidator;

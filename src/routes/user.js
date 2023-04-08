@@ -16,9 +16,30 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({
-    storage: storage
-});
+
+
+
+var upload = multer({
+    storage: storage,
+    fileFilter: function (req, file, cb) {
+        // Define the allowed types
+        const ALLOWED_TYPES = [
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/tiff',
+            'application/pdf'
+        ];
+        // Check if the file type is in the list
+        if (ALLOWED_TYPES.includes(file.mimetype)) {
+            // Accept the file
+            cb(null, true);
+        } else {
+            // Reject the file
+            cb(null, false);
+        }
+    }
+})
 
 const cpUpload = upload.fields([
     { name: 'image', maxCount: 1 },
@@ -30,7 +51,7 @@ router.get('/profile/:userId', User.getProfile);
 
 
 
-router.put('/profile/:userId', User.updateProfile);
+router.put('/profile/:userId', cpUpload, User.updateProfile);
 
 
 

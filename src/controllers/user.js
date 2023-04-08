@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const signUpInputValidator = require('../utils/inputValidators/user/signup');
 const generateAccessToken = require('../middlewares/auth/generateAccessToken');
 const signInInputValidator = require('../utils/inputValidators/user/signin');
+const updateInputValidator = require('../utils/inputValidators/user/update');
 
 const User = db.user;
 
@@ -109,9 +110,13 @@ module.exports = class UserController {
 
     static async updateProfile(req, res, next) {
         try {
-        
+
             if (!req.session.user || req.session.user.id != req.params.userId) {
                 return res.status(400).send({ message: 'User not registered!' });
+            }
+            const { error } = updateInputValidator(req.body);
+            if (error || !req.body.email || !req.body.password) {
+                return res.status(400).send(`Inputs not valid: ${error}`)
             }
             const body = req.body;
             let resume, userImage;
@@ -120,11 +125,15 @@ module.exports = class UserController {
                 userImage = req.files['image'][0].path || '';
                 resume = req.files['resume'][0].path || '';
             }
+            console.log('---------------');
+            console.log(req.params.userId);
+            console.log('---------------');
+
             const user = await User.findOne({ where: { id: req.params.userId } });
             if (!user) {
                 return res.status(400).send({ message: 'User not found!' });
             }
-            
+
             const hashedPassword = await bcrypt.hash(body.password, 10);
             const result = await User.update(
                 {
