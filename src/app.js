@@ -14,10 +14,6 @@ const { env } = process;
 
 const session = require('express-session');
 
-const notFound = require('./utils/func/pageNotFound');
-
-const ErrorHandler = require('./utils/func/errorHandler');
-
 
 const app = express();
 
@@ -46,11 +42,8 @@ Req.belongsTo(User);
 
 
 
-
-
-
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public/uploads')))
 
 process.env.ENV == 'dev' && app.use(morgan('dev'));
@@ -62,7 +55,7 @@ process.env.ENV == 'dev' && app.use(morgan('dev'));
 app.use(session({
     secret: env.SESSION_KEY,
 
-    resave: true,
+    resave: false,
 
     saveUninitialized: true
 }));
@@ -76,22 +69,10 @@ app.use(async (req, res, next) => {
 });
 
 
-
-
-
-
-
 app.use('/auth', require('./routes/auth'));
 
 app.use('/me', require('./routes/user.js'));
 
-
-
-
-
-app.use('*', notFound);
-
-app.use(ErrorHandler);
 
 
 

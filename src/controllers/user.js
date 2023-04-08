@@ -93,10 +93,10 @@ module.exports = class UserController {
 
     static async getProfile(req, res, next) {
         try {
-            if (!req.session.user) {
-                return res.status(400).send({ message: 'User not registered!' });
-            }
-            const user = await User.findOne({ where: { email: req.session.user.email } });
+            // if (!req.session.user) {
+            //     return res.status(400).send({ message: 'User not registered!' });
+            // }
+            const user = await User.findOne({ where: { id: req.params.userId } });
             if (!user) {
                 return res.status(400).send({ message: 'User not found!' });
             }
@@ -109,9 +109,8 @@ module.exports = class UserController {
 
     static async updateProfile(req, res, next) {
         try {
-            // console.log(req.files);
-            // console.log(req.session.email);
-            if (!req.session.user) {
+        
+            if (!req.session.user || req.session.user.id != req.params.userId) {
                 return res.status(400).send({ message: 'User not registered!' });
             }
             const body = req.body;
@@ -121,10 +120,11 @@ module.exports = class UserController {
                 userImage = req.files['image'][0].path || '';
                 resume = req.files['resume'][0].path || '';
             }
-            const user = await User.findOne({ where: { email: req.session.user.email } });
+            const user = await User.findOne({ where: { id: req.params.userId } });
             if (!user) {
                 return res.status(400).send({ message: 'User not found!' });
             }
+            
             const hashedPassword = await bcrypt.hash(body.password, 10);
             const result = await User.update(
                 {
