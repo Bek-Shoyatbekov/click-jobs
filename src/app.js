@@ -23,14 +23,21 @@ const app = express();
 const User = db.user;
 const Job = db.job;
 const Req = db.req;
+const Application = db.application;
 
 
 //Relations
 
+User.hasMany(Job);
+Job.belongsTo(User);
 
-User.belongsToMany(Job, { through: 'userJob' });
-Job.belongsToMany(User, { through: 'userJob' });
+User.hasMany(Application);
+Application.belongsTo(User);
 
+
+
+Job.hasMany(Application);
+Application.belongsTo(Job);
 
 
 app.use(express.json({ limit: '50mb' }));

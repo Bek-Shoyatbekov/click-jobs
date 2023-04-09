@@ -53,6 +53,9 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             type: DataTypes.ENUM('user', 'applicant', 'superadmin'),
             defaultValue: 'user'
         },
+        saved: {
+            type: Sequelize.ARRAY(Sequelize.STRING)
+        }
 
     });
     return User;

@@ -8,7 +8,6 @@ db.check();
 // db.syncDB();  //npm DO NOT TOUCH
 
 // Swagger Doc 
-
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
@@ -55,7 +54,6 @@ const ErrorHandler = require('./src/utils/func/errorHandler');
 app.use('*', notFound);
 
 app.use(ErrorHandler);
-
 
 
 

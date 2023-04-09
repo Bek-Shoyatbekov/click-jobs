@@ -4,6 +4,8 @@ const signUpInputValidator = require('../utils/inputValidators/user/signup');
 const generateAccessToken = require('../middlewares/auth/generateAccessToken');
 const signInInputValidator = require('../utils/inputValidators/user/signin');
 const updateInputValidator = require('../utils/inputValidators/user/update');
+const emailInputValidator = require('../utils/inputValidators/user/email');
+const resetPasswordInputValidator = require('../utils/inputValidators/user/code');
 const sendEmail = require('../utils/email_service/send_email');
 const User = db.user;
 const Code = db.code;
@@ -53,8 +55,13 @@ module.exports = class UserController {
 
     static async sendResetCode(req, res, next) {
         try {
+
             if (!req.body.email) {
                 return res.status(400).send(`Please enter your email`);
+            }
+            const { error } = emailInputValidator(req.body);
+            if (error) {
+                return res.status(400).send(`Inputs not valid: ${error.details[0].message}`)
             }
             const email = req.body.email;
             const code = Math.floor(Math.random() * 10000)
@@ -80,6 +87,10 @@ module.exports = class UserController {
         try {
             if (!req.body.code || !req.body.password) {
                 return res.status(400).send({ message: 'Input not provided' });
+            }
+            const { error } = resetPasswordInputValidator(req.body);
+            if (error) {
+                return res.status(400).send(`Inputs not valid: ${error.details[0].message}`)
             }
             const code = await Code.findOne({ where: { code: req.body.code } });
             if (!code) {

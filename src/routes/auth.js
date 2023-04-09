@@ -6,6 +6,8 @@ const { app, admin, provider, signInWithPopup } = require('../middlewares/auth/f
 
 const router = require('express').Router()
 
+
+
 router.post('/signup', User.signup);
 
 router.post('/signin', User.signin);
