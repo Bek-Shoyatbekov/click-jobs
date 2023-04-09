@@ -5,14 +5,12 @@ const db = require('./src/models/index.js');
 
 
 db.check();
-// db.syncDB();  DO NOT TOUCH
+// db.syncDB();  //npm DO NOT TOUCH
 
-// Swagger Doc // FIXME swagger is not working
+// Swagger Doc 
 
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-
-
 
 const options = {
     "definition": {

@@ -40,8 +40,9 @@ db.syncDB = syncDB;
 
 //connecting to model
 db.user = require('./user.model')(sequelize, DataTypes, Sequelize);
-db.token = require('./token.model')(sequelize, DataTypes, Sequelize);
 db.req = require('./req.model')(sequelize, DataTypes, Sequelize);
 db.job = require('./job.model')(sequelize, DataTypes, Sequelize);
+db.code = require('./code')(sequelize, DataTypes, Sequelize);
+
 
 module.exports = db;

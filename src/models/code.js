@@ -1,14 +1,19 @@
 module.exports = (sequelize, DataTypes, Sequelize) => {
-    const Token = sequelize.define('token', {
+    const Code = sequelize.define('code', {
         id: {
             type: DataTypes.UUID,
             defaultValue: Sequelize.UUIDV4,
             primaryKey: true,
         },
-        token: {
+        userEmail: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        code: {
+            type: DataTypes.STRING,
+            allowNul: false
         }
+
     });
-    return Token;
+    return Code;
 }

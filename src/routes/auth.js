@@ -12,6 +12,11 @@ router.post('/signin', User.signin);
 
 router.post('/logout', User.logout);
 
+router.post('/email', User.sendResetCode);
+
+router.post('/reset', User.resetPassword);
+
+
 // router.post('/firebase', (req, res, next) => { // TODO firebase with google provider
 //     try {
 //         provider.addScope('profile');

@@ -4,8 +4,9 @@ const signUpInputValidator = require('../utils/inputValidators/user/signup');
 const generateAccessToken = require('../middlewares/auth/generateAccessToken');
 const signInInputValidator = require('../utils/inputValidators/user/signin');
 const updateInputValidator = require('../utils/inputValidators/user/update');
-
+const sendEmail = require('../utils/email_service/send_email');
 const User = db.user;
+const Code = db.code;
 
 module.exports = class UserController {
     static async signup(req, res, next) {
@@ -26,6 +27,7 @@ module.exports = class UserController {
             } else {
                 body = value;
             }
+            let token = generateAccessToken(body.email);
             const hashedPassword = await bcrypt.hash(body.password, 10);
             const user = await User.create({
                 username: body.username,
@@ -33,16 +35,73 @@ module.exports = class UserController {
                 password: hashedPassword,
                 role: body.role,
                 bio: body.about,
+                token: token
             });
             req.session.email = user.email;
-            let token = generateAccessToken(body.email);
             const result = await user.save();
             res.header('Authorization', 'Bearer' + token)
             return res.status(201).send({ message: 'User created', token: token });
+
+            // return res.send(`
+            // <form action="/auth/verify" method="POST">
+            // <input type="number" name="code" placeholder="Verifaction code"></form>      
+            // `);
         } catch (err) {
             next(err);
         }
     };
+
+    static async sendResetCode(req, res, next) {
+        try {
+            if (!req.body.email) {
+                return res.status(400).send(`Please enter your email`);
+            }
+            const email = req.body.email;
+            const code = Math.floor(Math.random() * 10000)
+                .toString()
+                .padStart(4, "0");
+            let verifyCode = await Code.create({
+                userEmail: email,
+                code: code
+            });
+            await verifyCode.save();
+            await sendEmail(email,
+                'User verification ', `
+                Verification code is ${code}
+
+            `);
+            return res.status(201).send({ message: 'Email sent' });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    static async resetPassword(req, res, next) {
+        try {
+            if (!req.body.code || !req.body.password) {
+                return res.status(400).send({ message: 'Input not provided' });
+            }
+            const code = await Code.findOne({ where: { code: req.body.code } });
+            if (!code) {
+                return res.status(400).send({ message: 'code is invalid' });
+            }
+            const user = await User.findOne({ where: { email: code.userEmail } });
+            if (!user) {
+                return res.status(400).send({ message: ' \n code doesn\'t belong User' });
+            }
+            await User.update({
+                password: req.body.password
+            }, {
+                where: {
+                    email: code.userEmail
+                }
+            });
+            await code.destroy();
+            return res.status(200).redirect('/');
+        } catch (err) {
+            next(err);
+        }
+    }
     static async signin(req, res, next) {
         try {
             if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
@@ -85,7 +144,7 @@ module.exports = class UserController {
                 return res.status(400).send({ message: 'User not registered!' });
             }
             req.session.destroy();
-            return res.redirect('/');
+            return res.status(200).send(`User log out successfully`);
         } catch (err) {
             next(err);
         }
@@ -110,59 +169,54 @@ module.exports = class UserController {
 
     static async updateProfile(req, res, next) {
         try {
-
-            if (!req.session.user || req.session.user.id != req.params.userId) {
+            if (!req.session.email) {
                 return res.status(400).send({ message: 'User not registered!' });
             }
+            const user = await User.findOne({ where: { email: req.session.email, id: req.params.userId } });
+            if (!user) {
+                return res.status(400).send({ message: 'You are not Owner!' });
+            }
             const { error } = updateInputValidator(req.body);
-            if (error || !req.body.email || !req.body.password) {
+            if (error) {
                 return res.status(400).send(`Inputs not valid: ${error}`)
             }
             const body = req.body;
             let resume, userImage;
+            console.log(req.files);
             if (req.files) {
-
                 userImage = req.files['image'][0].path || '';
                 resume = req.files['resume'][0].path || '';
             }
-            console.log('---------------');
-            console.log(req.params.userId);
-            console.log('---------------');
+            console.log(userImage, resume);
 
-            const user = await User.findOne({ where: { id: req.params.userId } });
-            if (!user) {
-                return res.status(400).send({ message: 'User not found!' });
+            let hashedPassword;
+            if (body.password) {
+                hashedPassword = await bcrypt.hash(body.password, 10);
             }
-
-            const hashedPassword = await bcrypt.hash(body.password, 10);
             const result = await User.update(
                 {
-                    name: body.name,
-                    email: body.email,
-                    phone: body.phone,
-                    password: hashedPassword,
+                    ...(body.username && { username: body.username }),
+                    ...(body.email && { email: body.email }),
+                    ...(body.phone && { phone: body.phone }),
+                    ...(body.password && { password: hashedPassword }),
                     image: userImage,
                     resume: resume,
-                    bio: body.bio,
-                    role: body.role
+                    ...(body.bio && { bio: body.bio }),
+                    ...(body.role && { role: body.role }),
                 },
                 {
                     where:
                     {
-                        email: req.session.user.email
+                        id: req.params.userId
                     }
                 })
-            console.log(`User updated`);
-            return res.status(204).redirect('/profile');
+            return res.status(204).send({ message: `User has been updated` });
         } catch (err) {
             next(err);
         }
     }
 
     static async deleteProfile(req, res, next) { }
-
-    static async deleteProfile(req, res, next) { }
-
 
 
 

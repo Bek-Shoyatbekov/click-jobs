@@ -21,26 +21,20 @@ const app = express();
 
 
 const User = db.user;
-const Token = db.token;
 const Job = db.job;
 const Req = db.req;
 
 
 //Relations
 
-User.hasOne(Token, { onDelete: 'cascade' });
-Token.hasOne(User);
 
-User.hasMany(Job, { onDelete: 'cascade' });
-Job.belongsTo(User);
-
-User.hasMany(Req, { onDelete: 'cascade' });
-Req.belongsTo(User);
+User.belongsToMany(Job, { through: 'userJob' });
+Job.belongsToMany(User, { through: 'userJob' });
 
 
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public/uploads')))
 
 process.env.ENV == 'dev' && app.use(morgan('dev'));
@@ -65,6 +59,17 @@ app.use(async (req, res, next) => {
     next();
 });
 
+app.get('/', (req, res, next) => {
+    try {
+        return res.send(
+            `
+        <h1>Home</h1>
+        `
+        )
+    } catch (err) {
+        next(err);
+    }
+})
 
 app.use('/auth', require('./routes/auth'));
 

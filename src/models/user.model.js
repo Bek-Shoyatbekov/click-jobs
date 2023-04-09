@@ -38,7 +38,14 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             minLength: 9,
             maxLength: 50,
         },
-        isVerifiend: {
+        isVerified: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        token: {
+            type: DataTypes.STRING,
+        },
+        allowToPost: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },

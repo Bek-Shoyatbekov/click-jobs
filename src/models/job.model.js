@@ -20,9 +20,13 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             type: DataTypes.ARRAY(DataTypes.STRING),
             maxLength: 50
         },
+        salary: {
+            type: DataTypes.BIGINT,
+            allowNull: false
+        },
         status: {
             type: DataTypes.ENUM,
-            values: ['published', 'inproccess', 'canceled']
+            values: ['published', 'closed']
         }
     });
 
