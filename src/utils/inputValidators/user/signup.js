@@ -19,7 +19,6 @@ const signupSchema = Joi
             .string(),
         password: Joi
             .string()
-            .regex(/[a-z0-9]/)
             .min(5)
             .max(15)
             .required()

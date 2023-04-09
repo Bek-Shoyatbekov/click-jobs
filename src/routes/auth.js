@@ -6,9 +6,53 @@ const { app, admin, provider, signInWithPopup } = require('../middlewares/auth/f
 
 const router = require('express').Router()
 
-
+/**
+ * @swagger
+ * /auth/signup:
+ *  post:
+ *   summary: "Create a new user account"
+ *   description: ""
+ *   parameters:
+ *     - in: "body"
+ *       name: "body"
+ *       description: "User object that needs to be created"
+ *       required: true
+ *    
+ *   responses:
+ *     200:
+ *       description: "User created successfully"
+ *    
+ *       
+ *     400:
+ *       description: "Invalid input or user already exists"
+ *     500:
+ *       description: "Internal server error"
+ */
 
 router.post('/signup', User.signup);
+
+/**
+ * @swagger
+ * /auth/signin:
+ *  post:
+ *   summary: "Log in with an existing user account"
+ *   description: ""
+ *   parameters:
+ *     - in: "body"
+ *       name: "body"
+ *       description: "User credentials that need to be verified"
+ *       required: true
+
+ *   responses:
+ *     200:
+ *       description: "User logged in successfully"
+ *       schema:
+ *           
+ *     401:
+ *       description: "Invalid credentials or user not found"
+ *     500:
+ *       description: "Internal server error"
+ */
 
 router.post('/signin', User.signin);
 

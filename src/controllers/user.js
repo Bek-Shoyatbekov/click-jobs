@@ -14,6 +14,12 @@ module.exports = class UserController {
     static async signup(req, res, next) {
         try {
             let body;
+            const { error, value } = signUpInputValidator(req.body);
+            if (error) {
+                return res.status(400).send(`Inputs not valid: ${error.details[0].message}`)
+            } else {
+                body = value;
+            }
             const exists = await User.findOne({
                 where:
                 {
@@ -22,12 +28,6 @@ module.exports = class UserController {
             })
             if (exists) {
                 return res.status(400).send({ message: 'User already exists' });
-            }
-            const { error, value } = signUpInputValidator(req.body);
-            if (error) {
-                return res.status(400).send(`Inputs not valid: ${error.details[0].message}`)
-            } else {
-                body = value;
             }
             let token = generateAccessToken(body.email);
             const hashedPassword = await bcrypt.hash(body.password, 10);
@@ -42,7 +42,7 @@ module.exports = class UserController {
             req.session.email = user.email;
             const result = await user.save();
             res.header('Authorization', 'Bearer' + token)
-            return res.status(201).send({ message: 'User created', token: token });
+            return res.status(200).send({ message: 'User created', token: token });
 
             // return res.send(`
             // <form action="/auth/verify" method="POST">
