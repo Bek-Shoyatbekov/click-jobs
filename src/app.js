@@ -59,7 +59,6 @@ app.use(session({
 }));
 
 app.use(async (req, res, next) => {
-    // FIXME  it's important part
     if (req.session.email && !req.session.user) {
         req.session.user = await User.findOne({ where: { email: req.session.email } });
     }

@@ -5,7 +5,6 @@ const updateSchema = Joi
     .keys({
         username: Joi
             .string()
-            .alphanum()
             .min(3)
             .max(50)
             .trim(true),

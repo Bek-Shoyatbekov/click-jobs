@@ -7,6 +7,7 @@ require('dotenv').config();
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     host: dbConfig.HOST,
     dialect: dbConfig.dialect,
+    port:dbConfig.PORT,
     pool: {
         max: 5,
         min: 0,
@@ -14,6 +15,15 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
         idle: 10000
     }
 });
+// const sequelize = new Sequelize('click-jobs', 'postgres', 'bekzodbek01', {
+//     host: 'click-jobs.cyip8i9qrr2u.us-east-2.rds.amazonaws.com',
+//     port: '5432',
+//     dialect: 'postgres',
+//     dialectOptions: {
+//       ssl: 'Amazon RDS'
+//     }
+//   })
+
 //checking if connection is done
 const check = () => {
     sequelize.authenticate().then(() => {

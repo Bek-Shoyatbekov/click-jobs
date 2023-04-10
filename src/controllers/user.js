@@ -7,6 +7,7 @@ const updateInputValidator = require('../utils/inputValidators/user/update');
 const emailInputValidator = require('../utils/inputValidators/user/email');
 const resetPasswordInputValidator = require('../utils/inputValidators/user/code');
 const sendEmail = require('../utils/email_service/send_email');
+const { validate } = require('uuid');
 const User = db.user;
 const Code = db.code;
 
@@ -36,18 +37,12 @@ module.exports = class UserController {
                 email: body.email,
                 password: hashedPassword,
                 role: body.role,
-                bio: body.about,
                 token: token
             });
             req.session.email = user.email;
             const result = await user.save();
             res.header('Authorization', 'Bearer' + token)
             return res.status(200).send({ message: 'User created', token: token });
-
-            // return res.send(`
-            // <form action="/auth/verify" method="POST">
-            // <input type="number" name="code" placeholder="Verifaction code"></form>      
-            // `);
         } catch (err) {
             next(err);
         }
@@ -73,11 +68,11 @@ module.exports = class UserController {
             });
             await verifyCode.save();
             await sendEmail(email,
-                'User verification ', `
+                'User verification from Click Jobs', `
                 Verification code is ${code}
 
             `);
-            return res.status(201).send({ message: 'Email sent' });
+            return res.status(201).send({ message: 'Email has been sent' });
         } catch (err) {
             next(err);
         }
@@ -138,6 +133,8 @@ module.exports = class UserController {
             } else {
                 req.session.email = user.email;
                 const token = generateAccessToken(user.email);
+                user.token = token;
+                await user.save();
                 return res.status(200).send({
                     message: `Signed in`,
                     token: token
@@ -164,9 +161,9 @@ module.exports = class UserController {
 
     static async getProfile(req, res, next) {
         try {
-            // if (!req.session.user) {
-            //     return res.status(400).send({ message: 'User not registered!' });
-            // }
+            if (!validate(req.params.userId)) {
+                return res.status(400).send({ message: 'User id is not valid !' });
+            }
             const user = await User.findOne({ where: { id: req.params.userId } });
             if (!user) {
                 return res.status(400).send({ message: 'User not found!' });
@@ -178,28 +175,34 @@ module.exports = class UserController {
     }
 
 
-    static async updateProfile(req, res, next) {
+    static async updateProfile(req, res, next) { //   Only the owner can update profile . We can check weather user is valid or not through jwt token 
         try {
-            if (!req.session.email) {
+
+            if (Object.keys(req.body).length === 0 && Object.keys(req.files).length === 0) {
+                return res.status(400).send({ message: 'Update profile failed!\nThere is nothing to be updated' });
+            }
+
+            if (!req.user.email) {
                 return res.status(400).send({ message: 'User not registered!' });
             }
-            const user = await User.findOne({ where: { email: req.session.email, id: req.params.userId } });
+            const user = await User.findOne({ where: { email: req.user.email } });
             if (!user) {
                 return res.status(400).send({ message: 'You are not Owner!' });
             }
             const { error } = updateInputValidator(req.body);
             if (error) {
                 return res.status(400).send(`Inputs not valid: ${error}`)
+
             }
+
             const body = req.body;
             let resume, userImage;
-            console.log(req.files);
-            if (req.files) {
-                userImage = req.files['image'][0].path || '';
-                resume = req.files['resume'][0].path || '';
+            if (req.files.image) {
+                userImage = req.files['image'][0].path;
             }
-            console.log(userImage, resume);
-
+            if (req.files.resume) {
+                resume = req.files['resume'][0].path;
+            }
             let hashedPassword;
             if (body.password) {
                 hashedPassword = await bcrypt.hash(body.password, 10);
@@ -218,10 +221,10 @@ module.exports = class UserController {
                 {
                     where:
                     {
-                        id: req.params.userId
+                        email: req.user.email
                     }
-                })
-            return res.status(204).send({ message: `User has been updated` });
+                });
+            res.status(200).send({ message: `User has been updated` });
         } catch (err) {
             next(err);
         }
