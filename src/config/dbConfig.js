@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { env } = process;
+
 module.exports = {
     HOST: process.env.POSTGRESQL_DB_HOST,
     USER: process.env.POSTGRESQL_DB_USER,

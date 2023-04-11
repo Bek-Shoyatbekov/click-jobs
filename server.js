@@ -3,48 +3,8 @@ const app = require('./src/app.js');
 const db = require('./src/models/index.js');
 
 
-
 db.check();
-// db.syncDB();  // DO NOT TOUCH
-// TODO Write down Doc with Insomnia
-// Swagger Doc 
-// const swaggerJsdoc = require('swagger-jsdoc');
-// const swaggerUi = require('swagger-ui-express');
-
-// const options = {
-//     "definition": {
-//         "openapi": "3.0.2",
-//         // "swagger": "2.0",
-//         "info": {
-//             "title": "Click Jobs API",
-//             "version": "1.0",
-//             description: `It's for Click Jobs platform which is famous with its services`,
-//             license: {
-//                 name: "MIT",
-//                 url: "https://spdx.org/licenses/MIT.html",
-//             },
-//             contact: {
-//                 name: "Bek",
-//                 url: "https://t.me/Bek_Shoyatbekov",
-//                 email: "shoyatbekov03032003@gmail.com",
-//             },
-//         },
-//         "servers": [
-//             {
-//                 "url": `${process.env.BASE_URL}`,
-//                 description: 'Development server',
-//             }
-//         ],
-//         "paths": {
-//         }
-//     },
-//     apis: ['./src/routes/*.js'],
-// }
-
-
-// const specs = swaggerJsdoc(options);
-
-// app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));
+db.syncDB();  // DO NOT TOUCH
 
 const notFound = require('./src/utils/func/pageNotFound');
 
