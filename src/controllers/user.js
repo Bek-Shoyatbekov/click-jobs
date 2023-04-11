@@ -83,10 +83,10 @@ module.exports = class UserController {
             if (!req.body.code || !req.body.password) {
                 return res.status(400).send({ message: 'Input not provided' });
             }
-            const { error } = resetPasswordInputValidator(req.body);
-            if (error) {
-                return res.status(400).send(`Inputs not valid: ${error.details[0].message}`)
-            }
+            // const { error } = resetPasswordInputValidator(req.body);
+            // if (error) {
+            //     return res.status(400).send(`Inputs not valid: ${error.details[0].message}`)
+            // }
             const code = await Code.findOne({ where: { code: req.body.code } });
             if (!code) {
                 return res.status(400).send({ message: 'code is invalid' });
