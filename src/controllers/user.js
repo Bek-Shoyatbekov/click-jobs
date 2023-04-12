@@ -170,7 +170,6 @@ module.exports = class UserController {
             if (!passwordIsValid) {
                 return res.status(401).send({ message: 'Email or password  invalid' });
             } else {
-                req.session.email = user.email;
                 let msg = '';
                 const token = generateAccessToken(user.email);
                 if (!user.isVerified) {
