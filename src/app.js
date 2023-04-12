@@ -12,7 +12,7 @@ const db = require('./models/index');
 
 const { env } = process;
 
-const session = require('express-session');
+// const session = require('express-session');
 
 
 const app = express();
@@ -48,20 +48,20 @@ process.env.ENV == 'dev' && app.use(morgan('dev'));
 
 
 // For Session
-app.use(session({
-    secret: env.SESSION_KEY,
+// app.use(session({
+//     secret: env.SESSION_KEY,
 
-    resave: false,
+//     resave: false,
 
-    saveUninitialized: true
-}));
+//     saveUninitialized: true
+// }));
 
-app.use(async (req, res, next) => {
-    if (req.session.email && !req.session.user) {
-        req.session.user = await User.findOne({ where: { email: req.session.email } });
-    }
-    next();
-});
+// app.use(async (req, res, next) => {
+//     if (req.session.email && !req.session.user) {
+//         req.session.user = await User.findOne({ where: { email: req.session.email } });
+//     }
+//     next();
+// });
 
 app.get('/', (req, res, next) => {
     try {

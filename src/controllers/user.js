@@ -41,7 +41,7 @@ module.exports = class UserController {
                 role: body.role,
                 token: token
             });
-            req.session.email = user.email;
+            // req.session.email = user.email;
             const result = await user.save();
             const email = body.email;
             const code = Math.floor(Math.random() * 10000)
@@ -142,7 +142,7 @@ module.exports = class UserController {
                 }
             });
             await code.destroy();
-            return res.status(200).redirect('/');
+            return res.status(200).send({ message: "You password has been changed" });
         } catch (err) {
             next(err);
         }
@@ -191,11 +191,15 @@ module.exports = class UserController {
     };
     static async logout(req, res, next) {
         try {
-            if (!req.session.user) {
+            if (!req.user) {
                 return res.status(400).send({ message: 'User not registered!' });
             }
-            req.session.destroy();
-
+            const user = await User.findOne({ where: { email: req.user.email } });
+            if (!user) {
+                return res.status(400).send({ message: 'User not registered!' });
+            }
+            user.token = '';
+            await user.save();
             return res.status(200).send({ message: 'Logged out' });
         } catch (err) {
             next(err);
@@ -205,7 +209,7 @@ module.exports = class UserController {
     static async getProfile(req, res, next) {
         try {
             const user = await User.findOne({ where: { email: req.user.email } });
-            if (!user) {
+            if (!user || user.token == "") {
                 return res.status(400).send({ message: 'User not found!' });
             }
             return res.status(200).send(user);
@@ -226,14 +230,16 @@ module.exports = class UserController {
                 return res.status(400).send({ message: 'User not registered!' });
             }
             const user = await User.findOne({ where: { email: req.user.email } });
-            if (!user) {
+            if (user.token == '') {
+                return res.status(400).send({ message: 'User not registered!' });
+            }
+            if (user.role != 'superadmin' && !user) {
                 return res.status(400).send({ message: 'You are not Owner!' });
             }
             const { error } = updateInputValidator(req.body);
             if (error) {
                 return res.status(400).send(`Inputs not valid: ${error}`)
             }
-
             const body = req.body;
             let resume, userImage;
             if (req.files.image) {
@@ -268,6 +274,7 @@ module.exports = class UserController {
             next(err);
         }
     }
+
 
     static async deleteProfile(req, res, next) { }
 
