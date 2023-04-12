@@ -4,7 +4,7 @@ const db = require('./src/models/index.js');
 
 
 db.check();
-db.syncDB();  // DO NOT TOUCH
+// db.syncDB();  // DO NOT TOUCH
 
 const notFound = require('./src/utils/func/pageNotFound');
 
@@ -23,5 +23,5 @@ const server = createServer(app);
 
 
 server.listen(process.env.PORT, () => {
-    process.env.ENV == 'dev' && console.log('Server running at http://localhost:' + process.env.PORT);
+    process.env.ENV == 'dev' && console.log('Server running at ' + process.env.BASE_URL);
 })

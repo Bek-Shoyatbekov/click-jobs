@@ -4,10 +4,9 @@ const authenticateToken = require('../middlewares/auth/authenticateToken');
 
 const router = require('express').Router()
 
-
+router.get('/verify/:code', User.verifyUserEmail)
 
 router.post('/signup', User.signup);
-
 
 router.post('/signin', User.signin);
 

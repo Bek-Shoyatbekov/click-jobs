@@ -11,6 +11,8 @@ const { validate } = require('uuid');
 const User = db.user;
 const Code = db.code;
 
+require('dotenv').config();
+
 module.exports = class UserController {
     static async signup(req, res, next) {
         try {
@@ -41,16 +43,57 @@ module.exports = class UserController {
             });
             req.session.email = user.email;
             const result = await user.save();
-            res.header('Authorization', 'Bearer' + token)
-            return res.status(200).send({ message: 'User created', token: token });
+            const email = body.email;
+            const code = Math.floor(Math.random() * 10000)
+                .toString()
+                .padStart(4, "0");
+            let verifyCode = await Code.create({
+                userEmail: email,
+                code: code
+            });
+            await verifyCode.save();
+            await sendEmail(email,
+                'User verification from Click Jobs',
+                `Click to verify your email`
+                , `<h1>Email Confirmation</h1>
+                <h2>Hello ${body.username}</h2>
+                <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+                <a href="${process.env.BASE_URL}/auth/verify/${code}"> Click here</a>
+                </div>`);
+
+            return res.status(200).send({ message: 'Email has been sent to your email' });
         } catch (err) {
             next(err);
         }
     };
 
+    static async verifyUserEmail(req, res, next) {
+        try {
+            const code = req.params.code;
+            if (String(code).length != 4) {
+                return res.status(400).send({ message: 'Invalid verification code' });
+            }
+            const verifyCode = await Code.findOne({ where: { code: code } });
+            if (!verifyCode) {
+                return res.status(400).send({ message: 'Invalid verification code' });
+            }
+            const user = await User.findOne({ where: { email: verifyCode.userEmail } });
+            if (!user) {
+                return res.status(400).send({ message: 'Invalid verification code' });
+            }
+            const token = generateAccessToken(user.email);
+            user.token = token;
+            user.isVerified = true;
+            await user.save();
+            await verifyCode.destroy();
+            return res.status(200).send({ message: 'User has been verified', token: token });
+        } catch (err) {
+            next(err);
+        }
+    }
+
     static async sendResetCode(req, res, next) {
         try {
-
             if (!req.body.email) {
                 return res.status(400).send(`Please enter your email`);
             }
@@ -83,10 +126,6 @@ module.exports = class UserController {
             if (!req.body.code || !req.body.password) {
                 return res.status(400).send({ message: 'Input not provided' });
             }
-            // const { error } = resetPasswordInputValidator(req.body);
-            // if (error) {
-            //     return res.status(400).send(`Inputs not valid: ${error.details[0].message}`)
-            // }
             const code = await Code.findOne({ where: { code: req.body.code } });
             if (!code) {
                 return res.status(400).send({ message: 'code is invalid' });
@@ -132,11 +171,15 @@ module.exports = class UserController {
                 return res.status(401).send({ message: 'Email or password  invalid' });
             } else {
                 req.session.email = user.email;
+                let msg = '';
                 const token = generateAccessToken(user.email);
+                if (!user.isVerified) {
+                    msg = 'Please verify your email';
+                }
                 user.token = token;
                 await user.save();
                 return res.status(200).send({
-                    message: `Signed in`,
+                    message: `Signed in \n` + msg,
                     token: token
                 })
             }
@@ -152,19 +195,16 @@ module.exports = class UserController {
                 return res.status(400).send({ message: 'User not registered!' });
             }
             req.session.destroy();
-            return res.status(200).send(`User log out successfully`);
+
+            return res.status(200).send({ message: 'Logged out' });
         } catch (err) {
             next(err);
         }
     };
 
-
     static async getProfile(req, res, next) {
         try {
-            if (!validate(req.params.userId)) {
-                return res.status(400).send({ message: 'User id is not valid !' });
-            }
-            const user = await User.findOne({ where: { id: req.params.userId } });
+            const user = await User.findOne({ where: { email: req.user.email } });
             if (!user) {
                 return res.status(400).send({ message: 'User not found!' });
             }
@@ -192,7 +232,6 @@ module.exports = class UserController {
             const { error } = updateInputValidator(req.body);
             if (error) {
                 return res.status(400).send(`Inputs not valid: ${error}`)
-
             }
 
             const body = req.body;
@@ -231,7 +270,5 @@ module.exports = class UserController {
     }
 
     static async deleteProfile(req, res, next) { }
-
-
 
 }

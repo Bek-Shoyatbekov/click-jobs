@@ -18,8 +18,6 @@ const session = require('express-session');
 const app = express();
 
 
-
-
 const User = db.user;
 const Job = db.job;
 const Req = db.req;
