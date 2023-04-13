@@ -1,5 +1,6 @@
 const db = require('../models/index');
 const bcrypt = require('bcryptjs');
+const { Op } = require('sequelize');
 const signUpInputValidator = require('../utils/inputValidators/user/signup');
 const generateAccessToken = require('../middlewares/auth/generateAccessToken');
 const signInInputValidator = require('../utils/inputValidators/user/signin');
@@ -160,7 +161,11 @@ module.exports = class UserController {
             const user = await User.findOne({
                 where:
                 {
-                    email: req.body.email
+                    email: req.body.email,
+                    role: {
+                        [Op.ne]: 'banned'
+                    }
+
                 }
             });
             if (!user) {
@@ -207,7 +212,14 @@ module.exports = class UserController {
 
     static async getProfile(req, res, next) {
         try {
-            const user = await User.findOne({ where: { email: req.user.email } });
+            const user = await User.findOne({
+                where: {
+                    email: req.user.email,
+                    role: {
+                        [Op.ne]: 'banned'
+                    }
+                }
+            });
             if (!user || user.token == "") {
                 return res.status(400).send({ message: 'User not found!' });
             }
@@ -274,7 +286,7 @@ module.exports = class UserController {
         }
     }
 
-    static async sendReq(req, res, next) { // TODO create req controller
+    static async sendReq(req, res, next) {
         try {
             if (Object.keys(req.body).length == 0) {
                 return res.status(400).send({ message: 'No inputs!' });
@@ -285,7 +297,9 @@ module.exports = class UserController {
             }
             const body = req.body;
             const admin = await User.findOne({ where: { role: 'superadmin' } });
-
+            if (!admin) {
+                return res.status(400).send({ message: 'No superadmin!' });
+            }
             const user = await User.findOne({ where: { email: req.user.email } });
             const request = await user.createReq({
                 subject: body.subject,
