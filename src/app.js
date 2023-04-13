@@ -33,9 +33,11 @@ User.hasMany(Application);
 Application.belongsTo(User);
 
 
-
 Job.hasMany(Application);
 Application.belongsTo(Job);
+
+User.hasMany(Req);
+Req.belongsTo(User);
 
 
 app.use(express.json({ limit: '50mb' }));
@@ -75,9 +77,12 @@ app.get('/', (req, res, next) => {
     }
 })
 
+app.use('/admin', require('./routes/admin'));
+
 app.use('/auth', require('./routes/auth'));
 
 app.use('/me', require('./routes/user.js'));
+
 
 
 

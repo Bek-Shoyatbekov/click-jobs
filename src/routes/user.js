@@ -14,6 +14,12 @@ router.get('/profile', isAuth, User.getProfile);
 
 router.post('/profile', isAuth, cpUpload, User.updateProfile);
 
+// router.get('/req', isAuth, User.getMyReqs);
+
+router.post('/req', isAuth, User.sendReq);
+
+
+
 
 
 

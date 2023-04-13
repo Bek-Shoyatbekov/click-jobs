@@ -8,6 +8,7 @@ const emailInputValidator = require('../utils/inputValidators/user/email');
 const resetPasswordInputValidator = require('../utils/inputValidators/user/code');
 const sendEmail = require('../utils/email_service/send_email');
 const { validate } = require('uuid');
+const reqInputValidator = require('../utils/inputValidators/user/req');
 const User = db.user;
 const Code = db.code;
 
@@ -182,7 +183,6 @@ module.exports = class UserController {
                     token: token
                 })
             }
-
         } catch (err) {
             next(err);
         }
@@ -274,7 +274,40 @@ module.exports = class UserController {
         }
     }
 
+    static async sendReq(req, res, next) { // TODO create req controller
+        try {
+            if (Object.keys(req.body).length == 0) {
+                return res.status(400).send({ message: 'No inputs!' });
+            }
+            const { error } = reqInputValidator(req.body);
+            if (error) {
+                return res.status(400).send(`Inputs not valid: ${error}`)
+            }
+            const body = req.body;
+            const admin = await User.findOne({ where: { role: 'superadmin' } });
 
-    static async deleteProfile(req, res, next) { }
+            const user = await User.findOne({ where: { email: req.user.email } });
+            const request = await user.createReq({
+                subject: body.subject,
+                text: body.text,
+                tags: body.tags
+            });
+            await request.save();
+            if (admin) {
+                await sendEmail(admin.email, body.subject, body.text, `<h1>User requested you</h1> <h5> ${body.text} </h5>`);
+            }
+            res.status(201).send({ message: `Request has been created` });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    static async getMyReqs(req, res, next) {
+        try {
+
+        } catch (err) {
+
+        }
+    }
 
 }

@@ -2,7 +2,7 @@ const db = require('../models/index');
 const uuid = require('uuid');
 
 const User = db.user;
-const Course = db.course;
+
 
 module.exports = class ContentConroller {
     static async create(req, res, next) {
