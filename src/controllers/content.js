@@ -1,17 +1,16 @@
 const db = require('../models/index');
+
 const uuid = require('uuid');
 
 const User = db.user;
 
 
-module.exports = class ContentConroller {
+module.exports = class ContentController {
     static async create(req, res, next) {
         try {
-
         } catch (err) {
             next(err);
         }
-
     }
     static async findOneById(req, res, next) {
 

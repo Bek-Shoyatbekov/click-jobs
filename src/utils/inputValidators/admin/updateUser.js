@@ -4,16 +4,12 @@ const updateUserSchema = Joi
     .object()
     .keys({
         banned: Joi
-            .boolean()
-        ,
+            .boolean(),
         allowToPost: Joi
-            .boolean()
-        ,
+            .boolean(),
         isVerified: Joi
             .boolean()
     })
-const updateUserInputValidator = (payload) => {
-    return updateUserSchema.validate(payload);
-}
+const updateUserInputValidator = (payload) => updateUserSchema.validate(payload);
 
 module.exports = updateUserInputValidator;

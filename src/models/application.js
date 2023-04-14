@@ -7,9 +7,9 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
         },
         status: {
             type: DataTypes.ENUM,
-            values: ['cancelled', 'reviewing', 'delivered']
+            values: ['cancelled', 'reviewing', 'delivered'],
+            defaultValue:'delivered'
         }
     });
-
     return Application;
 }

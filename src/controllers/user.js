@@ -1,15 +1,27 @@
 const db = require('../models/index');
+
 const bcrypt = require('bcryptjs');
+
 const { Op } = require('sequelize');
+
 const signUpInputValidator = require('../utils/inputValidators/user/signup');
+
 const generateAccessToken = require('../middlewares/auth/generateAccessToken');
+
 const signInInputValidator = require('../utils/inputValidators/user/signin');
+
 const updateInputValidator = require('../utils/inputValidators/user/update');
+
 const emailInputValidator = require('../utils/inputValidators/user/email');
+
 const resetPasswordInputValidator = require('../utils/inputValidators/user/code');
+
 const sendEmail = require('../utils/email_service/send_email');
+
 const { validate } = require('uuid');
+
 const reqInputValidator = require('../utils/inputValidators/user/req');
+
 const User = db.user;
 const Code = db.code;
 
@@ -43,7 +55,6 @@ module.exports = class UserController {
                 role: body.role,
                 token: token
             });
-            // req.session.email = user.email;
             const result = await user.save();
             const email = body.email;
             const code = Math.floor(Math.random() * 10000)
@@ -59,11 +70,10 @@ module.exports = class UserController {
                 `Click to verify your email`
                 , `<h1>Email Confirmation</h1>
                 <h2>Hello ${body.username}</h2>
-                <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-                <a href="${process.env.BASE_URL}/auth/verify/${code}"> Click here</a>
+                <p>Thank you for subscribing!</p>
+                Your confirmation code is : ${code}
                 </div>`);
-
-            return res.status(200).send({ message: 'Email has been sent to your email' });
+            return res.status(200).send({ message: 'Email has been sent to your email\n Check email ' });
         } catch (err) {
             next(err);
         }
@@ -71,7 +81,7 @@ module.exports = class UserController {
 
     static async verifyUserEmail(req, res, next) {
         try {
-            const code = req.params.code;
+            const code = req.body.code;
             if (String(code).length != 4) {
                 return res.status(400).send({ message: 'Invalid verification code' });
             }
@@ -115,7 +125,6 @@ module.exports = class UserController {
             await sendEmail(email,
                 'User verification from Click Jobs', `
                 Verification code is ${code}
-
             `);
             return res.status(201).send({ message: 'Email has been sent' });
         } catch (err) {
@@ -149,6 +158,7 @@ module.exports = class UserController {
             next(err);
         }
     }
+
     static async signin(req, res, next) {
         try {
             if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
@@ -165,14 +175,12 @@ module.exports = class UserController {
                     role: {
                         [Op.ne]: 'banned'
                     }
-
                 }
             });
             if (!user) {
                 return res.status(401).send({ message: 'User not found' });
             }
             const passwordIsValid = await bcrypt.compare(req.body.password, user.password);
-
             if (!passwordIsValid) {
                 return res.status(401).send({ message: 'Email or password  invalid' });
             } else {
@@ -191,8 +199,8 @@ module.exports = class UserController {
         } catch (err) {
             next(err);
         }
-
     };
+
     static async logout(req, res, next) {
         try {
             if (!req.user) {
@@ -229,14 +237,11 @@ module.exports = class UserController {
         }
     }
 
-
     static async updateProfile(req, res, next) { //   Only the owner can update profile . We can check weather user is valid or not through jwt token 
         try {
-
             if (Object.keys(req.body).length === 0 && Object.keys(req.files).length === 0) {
                 return res.status(400).send({ message: 'Update profile failed!\nThere is nothing to be updated' });
             }
-
             if (!req.user.email) {
                 return res.status(400).send({ message: 'User not registered!' });
             }
@@ -308,7 +313,10 @@ module.exports = class UserController {
             });
             await request.save();
             if (admin) {
-                await sendEmail(admin.email, body.subject, body.text, `<h1>User requested you</h1> <h5> ${body.text} </h5>`);
+                await sendEmail(admin.email, body.subject, body.text,
+                    `<h1>User requested you</h1> <h5> ${body.text} </h5>
+                    <button>  <a href="${process.env.BASE_URL}/admin/requests"</a> </button>
+                `);
             }
             res.status(201).send({ message: `Request has been created` });
         } catch (err) {
@@ -316,7 +324,7 @@ module.exports = class UserController {
         }
     }
 
-    static async getMyReqs(req, res, next) {
+    static async methodName(req, res, next) {
         try {
 
         } catch (err) {

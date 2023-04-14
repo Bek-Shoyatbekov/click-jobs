@@ -15,8 +15,7 @@ const signinSchema = Joi
             .max(15)
             .required()
     })
-const signInInputValidator = (payload) => {
-    return signinSchema.validate(payload);
-}
+const signInInputValidator = (payload) => signinSchema.validate(payload);
+
 
 module.exports = signInInputValidator;

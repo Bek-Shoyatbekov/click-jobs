@@ -14,8 +14,7 @@ const reqSchema = Joi
             .string()
             .trim(true)
     })
-const reqInputValidator = (payload) => {
-    return reqSchema.validate(payload);
-}
+const reqInputValidator = (payload) => reqSchema.validate(payload);
+
 
 module.exports = reqInputValidator;

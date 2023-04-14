@@ -5,7 +5,6 @@ const signupSchema = Joi
     .keys({
         username: Joi
             .string()
-            .alphanum()
             .min(3)
             .max(50)
             .trim(true)
@@ -21,15 +20,12 @@ const signupSchema = Joi
             .string()
             .min(5)
             .max(15)
-            .required()
-        ,
+            .required(),
         role: Joi
-            .valid('user', 'aplicant')
+            .valid('user', 'applicant')
             .required()
-
     })
-const signUpInputValidator = (payload) => {
-    return signupSchema.validate(payload);
-}
+const signUpInputValidator = (payload) => signupSchema.validate(payload);
+
 
 module.exports = signUpInputValidator;

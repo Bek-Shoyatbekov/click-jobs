@@ -6,16 +6,13 @@ const resetPasswordSchema = Joi
         email: Joi
             .string()
             .email()
-            .trim(true)
-        ,
+            .trim(true),
         password: Joi
             .string()
             .min(5)
             .max(15)
         ,
     })
-const resetPasswordInputValidator = (payload) => {
-    return resetPasswordSchema.validate(payload);
-}
+const resetPasswordInputValidator = (payload) => resetPasswordSchema.validate(payload);
 
 module.exports = resetPasswordInputValidator;

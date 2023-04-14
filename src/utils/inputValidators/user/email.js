@@ -8,8 +8,7 @@ const emailSchema = Joi
             .email()
             .trim(true)
     })
-const emailInputValidator = (payload) => {
-    return emailSchema.validate(payload);
-}
+const emailInputValidator = (payload) => emailSchema.validate(payload);
+
 
 module.exports = emailInputValidator;

@@ -1,5 +1,8 @@
 const db = require('../models/index');
+
 const updateUserInputValidator = require('../utils/inputValidators/admin/updateUser');
+
+const { Op } = require('sequelize');
 
 const User = db.user;
 const Req = db.req;
@@ -13,24 +16,26 @@ module.exports = class adminController {
                 return res.status(401).send({ message: "you are not admin" });
             }
             const users = await User.findAll({
-                where: { role: 'user' },
+                where: {
+                    role: {
+                        [Op.ne]: 'banned'
+                    }
+                },
                 include: [
                     {
                         model: Req, Job,
-
                     }
                 ]
-
             });
             if (!users || users.length == 0) {
                 return res.status(404).send({ message: "no users" });
             }
             return res.status(200).send(users);
-
         } catch (err) {
             return next(err);
         }
     }
+
     static async updateUserById(req, res, next) {
         try {
             if (!req.params.id || String(req.params.id).length == 0) {
@@ -58,7 +63,6 @@ module.exports = class adminController {
         } catch (err) {
             return next(err);
         }
-
     }
 
     static async getAllRequests(req, res, next) {
@@ -68,19 +72,24 @@ module.exports = class adminController {
                 return res.status(401).send({ message: "you are not admin" });
             }
             const requests = await Req.findAll();
-
             if (!requests) {
                 return res.status(404).send({ message: "no requests" });
             }
             return res.status(200).send(requests);
-
         } catch (err) {
             return next(err);
         }
     }
-    static async getRequestById(req, res, next) {
 
+    static async getRequestById(req, res, next) {
+        try {
+
+
+        } catch (err) {
+
+        }
     }
+    
     static async getRequestByUserId(req, res, next) {
 
     }

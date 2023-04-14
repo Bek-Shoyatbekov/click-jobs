@@ -13,7 +13,6 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             type: DataTypes.STRING,
             allowNul: false
         }
-
     });
     return Code;
 }

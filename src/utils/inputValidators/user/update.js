@@ -11,21 +11,16 @@ const updateSchema = Joi
         email: Joi
             .string()
             .email()
-            .trim(true)
-        ,
+            .trim(true),
         bio: Joi
             .string(),
         password: Joi
             .string()
             .min(5)
-            .max(15)
-        ,
+            .max(15),
         role: Joi
-            .valid('user', 'aplicant')
-
+            .valid('user', 'applicant')
     })
-const updateInputValidator = (payload) => {
-    return updateSchema.validate(payload);
-}
+const updateInputValidator = (payload) => updateSchema.validate(payload);
 
 module.exports = updateInputValidator;
