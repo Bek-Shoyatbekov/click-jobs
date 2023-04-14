@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             type: DataTypes.TEXT,
             allowNull: false
         },
+        jobType: {
+            type: DataTypes.ENUM,
+            values: ['full-time', 'part-time', 'internship', 'contract', 'hybrid', 'volunteer', 'freelance']
+        },
         tags:
         {
             type: DataTypes.ARRAY(DataTypes.STRING),
@@ -26,7 +30,7 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
         },
         status: {
             type: DataTypes.ENUM,
-            values: ['published', 'closed']
+            values: ['closed', 'open', 'applied']
         }
     });
 
