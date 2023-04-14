@@ -83,6 +83,8 @@ app.use('/auth', require('./routes/auth'));
 
 app.use('/me', require('./routes/user.js'));
 
+app.use('/content', require('./routes/content'));
+
 
 
 

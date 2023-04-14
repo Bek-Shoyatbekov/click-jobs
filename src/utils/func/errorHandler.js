@@ -1,5 +1,7 @@
 require('dotenv').config();
 
+const jwt = require('jsonwebtoken');
+
 const ErrorHandler = (err, req, res, next) => {
     const errStatus = err.statusCode || 500, errMsg = err.message || 'Something went wrong';
     if (err instanceof jwt.JsonWebTokenError) {

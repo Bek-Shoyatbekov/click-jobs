@@ -9,6 +9,7 @@ const Req = db.req;
 const Job = db.job;
 
 module.exports = class adminController {
+
     static async getAllUsers(req, res, next) {
         try {
             const admin = await User.findOne({ where: { email: req.user.email, role: 'superadmin' } });
@@ -31,6 +32,36 @@ module.exports = class adminController {
                 return res.status(404).send({ message: "no users" });
             }
             return res.status(200).send(users);
+        } catch (err) {
+            return next(err);
+        }
+    }
+
+    static async getUserById(req, res, next) {
+        try {
+            const id = req.params.userId;
+            if (!id) {
+                return res.status(400).send({ message: "no user id" });
+            }
+            const admin = await User.findOne({ where: { email: req.user.email, role: 'superadmin' } });
+            if (!admin) {
+                return res.status(401).send({ message: "you are not admin" });
+            }
+            const user = await User.findOne({
+                where: {
+                    id: id
+                },
+                include:
+                    [
+                        {
+                            model: Req, Job,
+                        }
+                    ]
+            });
+            if (!user) {
+                return res.status(404).send({ message: "no user" });
+            }
+            return res.status(200).send(user);
         } catch (err) {
             return next(err);
         }
@@ -79,19 +110,6 @@ module.exports = class adminController {
         } catch (err) {
             return next(err);
         }
-    }
-
-    static async getRequestById(req, res, next) {
-        try {
-
-
-        } catch (err) {
-
-        }
-    }
-    
-    static async getRequestByUserId(req, res, next) {
-
     }
 
 
