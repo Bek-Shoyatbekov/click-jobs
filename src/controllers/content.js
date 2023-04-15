@@ -57,6 +57,7 @@ module.exports = class ContentController {
             if (!userIsValid) {
                 return res.status(403).send({ message: 'You can not get job' });
             }
+            console.log('keldi');
             return res.status(200).send(userIsValid.jobs);
         } catch (err) {
             next(err);
