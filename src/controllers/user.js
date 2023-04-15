@@ -290,7 +290,7 @@ module.exports = class UserController {
             next(err);
         }
     }
-
+    //comment
     static async sendReq(req, res, next) {
         try {
             if (Object.keys(req.body).length == 0) {
