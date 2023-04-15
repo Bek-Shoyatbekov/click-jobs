@@ -57,7 +57,6 @@ module.exports = class ContentController {
             if (!userIsValid) {
                 return res.status(403).send({ message: 'You can not get job' });
             }
-            console.log('keldi');
             return res.status(200).send(userIsValid.jobs);
         } catch (err) {
             next(err);
@@ -79,12 +78,12 @@ module.exports = class ContentController {
             if (!user) return res.status(404).send({ message: 'User not found' });
             if (req.user.email !== user.email) return res.status(403).send({ message: 'You can not edit job' });
             job.set({
-                title: req.body.title,
-                description: req.body.description,
-                jobType: req.body.jobType,
-                salary: req.body.salary
+                title: req.body.title || job.title,
+                description: req.body.description || job.description,
+                jobType: req.body.jobType || job.jobType,
+                salary: req.body.salary || job.salary
             });
-            job.set('tags', req.body.tags.split(' '))
+            req.body.tags && job.set('tags', req.body.tags.split(' '))
             await job.save();
             return res.status(200).send({ message: 'Job updated' });
         } catch (err) {
@@ -92,10 +91,41 @@ module.exports = class ContentController {
         }
     }
     static async findOneById(req, res, next) {
-
+        try {
+            const jobId = req.params.jobId;
+            if (!jobId) return res.status(400).send({ message: 'Job id is missing' });
+            const job = await Job.findOne({
+                where:
+                {
+                    id: jobId,
+                }
+            })
+            if (!job) return res.status(404).send({ message: 'Job not found' });
+            return res.status(200).send(job);
+        } catch (err) {
+            next(err);
+        }
     }
 
     static async deleteById(req, res, next) {
+        try {
+            if (!req.params.jobId) {
+                return res.status(400).send({ message: 'Job id is missing' });
+            }
+            const isValidUser = await User.findOne({ where: { email: req.user.email } });
+            if (!isValidUser) {
+                return res.status(403).send({ message: 'You can not delete job' });
+            }
+            await Job.destroy({
+                where:
+                {
+                    id: req.params.jobId, userId: isValidUser.id
+                }
+            });
+            return res.status(200).send({ message: 'Job deleted' });
+        } catch (err) {
+            next(err);
+        }
 
     }
 }

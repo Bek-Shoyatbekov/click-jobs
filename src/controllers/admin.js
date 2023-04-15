@@ -112,5 +112,78 @@ module.exports = class adminController {
         }
     }
 
+    static async getAllContent(req, res, next) {
+        try {
+            const admin = await User.findOne({ where: { email: req.user.email, role: 'superadmin' } });
+            if (!admin) {
+                return res.status(401).send({ message: "you are not admin" });
+            }
+            const jobs = await Job.findAll({
+                include: {
+                    model: User,
+                }
+            })
+            return res.status(200).send(jobs);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    static async updateContentById(req, res, next) {
+        try {
+            const admin = await User.findOne({ where: { email: req.user.email, role: 'superadmin' } });
+            if (!admin) {
+                return res.status(401).send({ message: "you are not admin" });
+            }
+            const jobId = req.params.jobId;
+            if (!jobId) return res.status(400).send({ message: 'Job id is missing' });
+            const job = await Job.findOne({
+                where:
+                {
+                    id: jobId,
+                }
+            })
+            if (!job) return res.status(404).send({ message: 'Job not found' });
+            job.set({
+                title: req.body.title || job.title,
+                description: req.body.description || job.description,
+                jobType: req.body.jobType || job.jobType,
+                salary: req.body.salary || job.salary,
+                status: req.body.status || job.status
+            });
+            req.body.tags && job.set('tags', req.body.tags.split(' '))
+            await job.save();
+            return res.status(200).send({ message: 'Job updated' });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    static async findOneJobById(req, res, next) {
+        try {
+            const jobId = req.params.jobId;
+            if (!jobId) return res.status(400).send({ message: 'Job id is missing' });
+            const admin = await User.findOne({ where: { email: req.user.email, role: 'superadmin' } });
+            if (!admin) {
+                return res.status(401).send({ message: "you are not admin" });
+            }
+            const job = await Job.findOne({
+                where:
+                {
+                    id: jobId,
+                },
+                include: {
+                    model: User,
+                    attributes: ['username', 'email', 'id']
+                }
+            })
+            if (!job) return res.status(404).send({ message: 'Job not found' });
+            return res.status(200).send(job);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+
 
 }

@@ -13,6 +13,10 @@ router.get('/user/:userId', isAuth, adminController.getUserById)
 
 router.put('/users/:id', isAuth, adminController.updateUserById);
 
+router.get('/jobs', isAuth, adminController.getAllContent);
 
+router.put('/jobs/:jobId', isAuth, adminController.updateContentById);
+
+router.get('/jobs/:jobId', isAuth, adminController.findOneJobById);
 
 module.exports = router

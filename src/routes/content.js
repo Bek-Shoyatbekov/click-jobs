@@ -11,6 +11,10 @@ router.post('/add', isAuth, ContentController.createJob);
 
 router.get('/all', isAuth, ContentController.getAllJob);
 
+router.put('/update/:jobId', isAuth, ContentController.updateById);
+
+router.delete('/delete/:jobId', isAuth, ContentController.deleteById);
+
 
 
 module.exports = router;
