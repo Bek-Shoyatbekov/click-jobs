@@ -67,6 +67,7 @@ process.env.ENV == 'dev' && app.use(morgan('dev'));
 
 app.get('/', (req, res, next) => {
     try {
+        console.log('worked');
         return res.send(
             `
         <h1>Home</h1>
