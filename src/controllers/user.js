@@ -324,11 +324,14 @@ module.exports = class UserController {
         }
     }
 
-    static async methodName(req, res, next) {
+    static async search(req, res, next) { // TODO search 
         try {
+            const { tags, minSalary, maxSalary, jobType } = req.params;
+
+
 
         } catch (err) {
-
+            next(err);
         }
     }
 

@@ -15,6 +15,8 @@ router.put('/update/:jobId', isAuth, ContentController.updateById);
 
 router.delete('/delete/:jobId', isAuth, ContentController.deleteById);
 
+router.get('/:jobId',  ContentController.findOneById)
+
 
 
 module.exports = router;
