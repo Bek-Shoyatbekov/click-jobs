@@ -18,9 +18,11 @@ router.post('/profile', isAuth, cpUpload, UserController.updateProfile);
 
 router.post('/req', isAuth, UserController.sendReq);
 
-router.get('/jobs', isAuth, ContentController.getAllJob);
+router.get('/myjobs', isAuth, ContentController.getAllJob);
 
 router.get('/jobs', UserController.search);
+
+
 
 
 

@@ -24,6 +24,7 @@ const reqInputValidator = require('../utils/inputValidators/user/req');
 
 const User = db.user;
 const Code = db.code;
+const Job = db.job;
 
 require('dotenv').config();
 
@@ -324,12 +325,40 @@ module.exports = class UserController {
         }
     }
 
-    static async search(req, res, next) { // TODO search 
+    static async search(req, res, next) { // TODO search  TODO still
         try {
-            const { tags, minSalary, maxSalary, jobType } = req.params;
+            const tags = (typeof req.params.tags == 'string' && req.params.tags.split(' ')) || [];
+            const minSalary = req.params.minSalary ? req.params.minSalary : 0;
+            const maxSalary = req.params.maxSalary ? req.params.maxSalary : Number.MAX_VALUE;
+            const jobType = (typeof req.params.jobType == 'string' && req.params.jobType.split(' ')) || '';
+            console.log(maxSalary)
+            const jobs = await Job.findAll({
+                where: {
+                    status: {
+                        [Op.ne]: 'closed'
+                    },
+                    salary: {
+                        [Op.gt]: minSalary,
+                        [Op.lt]: maxSalary
+                    },
+                    // jobType: {
+                    //     [Op.like]: { [Op.any]: jobType }
+                    // },
+                    // tags: {
+                    //     [Op.like]: { [Op.any]: tags }
+                    // }
 
 
 
+                },
+                include: {
+                    model: User,
+                }
+            });
+            if (!jobs) {
+                return res.status(404).send({ message: 'No jobs found' });
+            }
+            res.status(200).send({ message: 'Jobs found', jobs });
         } catch (err) {
             next(err);
         }
