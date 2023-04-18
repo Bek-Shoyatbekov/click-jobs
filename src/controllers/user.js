@@ -327,34 +327,36 @@ module.exports = class UserController {
 
     static async search(req, res, next) { // TODO search  TODO still 
         try {
-            const tags = (typeof req.query.tags == 'string' && req.query.tags.split(' ')) || [];
-            const minSalary = req.query.minSalary ? req.query.minSalary : 0;
-            const maxSalary = req.query.maxSalary ? req.query.maxSalary : Number.MAX_VALUE;
-            const jobType = (typeof req.query.jobType == 'string' && req.query.jobType.split(' ')) || '';
-            console.log(jobType);
-            const jobs = await Job.findAll({
-                where: {
-                    status: {
-                        [Op.ne]: 'closed'
-                    },
-                    salary: {
-                        [Op.gte]: minSalary,
-                        [Op.lte]: maxSalary
-                    },
-                    jobType: {
-                        [Op.contains]: jobType // TODO make it 
-                    }
-                    // tags: {
-                    //     [Op.like]: { [Op.any]: tags }
-                    // }
-
-
-
-                },
+            const { tags, jobType, minSalary, maxSalary } = req.query;
+            const options = {
+                where: {},
                 include: {
-                    model: User,
+                    model: User
                 }
-            });
+            };
+            if (tags) {
+                options.where.tags = {
+                    [Op.contains]: tags.split(',') // split by comma and create an array
+                };
+            }
+            if (jobType) {
+                options.where.jobType = {
+                    [Op.contains]: jobType.split(',') // split by comma and create an array
+                };
+            }
+            // filter by salary range if provided
+            if (minSalary || maxSalary) {
+                options.where.salary = {};
+
+                if (minSalary) {
+                    options.where.salary[Op.gte] = minSalary;
+                }
+
+                if (maxSalary) {
+                    options.where.salary[Op.lte] = maxSalary;
+                }
+            }
+            const jobs = await Job.findAll(options);
             if (!jobs) {
                 return res.status(404).send({ message: 'No jobs found' });
             }
