@@ -184,6 +184,22 @@ module.exports = class adminController {
         }
     }
 
+    static async deleteUserById(req, res, next) {
+        try {
+            const userId = req.params.userId;
+            if (!userId) return res.status(400).send({ message: 'User id is missing' });
+            const admin = await User.findOne({ where: { email: req.user.email, role: 'superadmin' } });
+            if (!admin) {
+                return res.status(401).send({ message: "you are not admin" });
+            }
+            const user = await User.findOne({ where: { id: userId } });
+            if (!user) return res.status(404).send({ message: 'User not found' });
+            await user.destroy();
+            return res.status(200).send({ message: 'User deleted' });
 
+        } catch (err) {
+            next(err);
+        }
+    }
 
 }

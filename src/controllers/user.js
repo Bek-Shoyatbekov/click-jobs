@@ -325,25 +325,25 @@ module.exports = class UserController {
         }
     }
 
-    static async search(req, res, next) { // TODO search  TODO still
+    static async search(req, res, next) { // TODO search  TODO still 
         try {
-            const tags = (typeof req.params.tags == 'string' && req.params.tags.split(' ')) || [];
-            const minSalary = req.params.minSalary ? req.params.minSalary : 0;
-            const maxSalary = req.params.maxSalary ? req.params.maxSalary : Number.MAX_VALUE;
-            const jobType = (typeof req.params.jobType == 'string' && req.params.jobType.split(' ')) || '';
-            console.log(maxSalary)
+            const tags = (typeof req.query.tags == 'string' && req.query.tags.split(' ')) || [];
+            const minSalary = req.query.minSalary ? req.query.minSalary : 0;
+            const maxSalary = req.query.maxSalary ? req.query.maxSalary : Number.MAX_VALUE;
+            const jobType = (typeof req.query.jobType == 'string' && req.query.jobType.split(' ')) || '';
+            console.log(jobType);
             const jobs = await Job.findAll({
                 where: {
                     status: {
                         [Op.ne]: 'closed'
                     },
                     salary: {
-                        [Op.gt]: minSalary,
-                        [Op.lt]: maxSalary
+                        [Op.gte]: minSalary,
+                        [Op.lte]: maxSalary
                     },
-                    // jobType: {
-                    //     [Op.like]: { [Op.any]: jobType }
-                    // },
+                    jobType: {
+                        [Op.contains]: jobType // TODO make it 
+                    }
                     // tags: {
                     //     [Op.like]: { [Op.any]: tags }
                     // }

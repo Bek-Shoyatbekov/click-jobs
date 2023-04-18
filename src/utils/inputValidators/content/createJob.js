@@ -14,7 +14,7 @@ const createJobSchema = Joi
             .trim(true)
             .required(),
         jobType: Joi
-            .valid('full-time', 'part-time', 'internship', 'contract', 'hybrid', 'volunteer', 'freelance')
+            .string()
             .required(),
         tags: Joi
             .string(),

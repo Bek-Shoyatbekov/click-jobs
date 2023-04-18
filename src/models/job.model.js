@@ -16,8 +16,8 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             allowNull: false
         },
         jobType: {
-            type: DataTypes.ENUM,
-            values: ['full-time', 'part-time', 'internship', 'contract', 'hybrid', 'volunteer', 'freelance']
+            type: DataTypes.ARRAY(DataTypes.STRING),
+            allowNull: false
         },
         tags:
         {

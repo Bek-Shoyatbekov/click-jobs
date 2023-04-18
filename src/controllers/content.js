@@ -25,10 +25,11 @@ module.exports = class ContentController {
             if (error) {
                 return res.status(400).send({ message: error });
             }
+            console.log(req.body.tags)
             const job = await applicant.createJob({
                 title: req.body.title,
                 description: req.body.description,
-                jobType: req.body.jobType,
+                jobType: req.body.jobType.split(' '),
                 salary: req.body.salary,
                 tags: req.body.tags.split(' ')
             });
