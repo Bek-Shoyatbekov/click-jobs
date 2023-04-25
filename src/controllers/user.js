@@ -2,6 +2,8 @@ const db = require('../models/index');
 
 const bcrypt = require('bcryptjs');
 
+const _ = require('lodash');
+
 const { Op } = require('sequelize');
 
 const signUpInputValidator = require('../utils/inputValidators/user/signup');
@@ -25,6 +27,7 @@ const reqInputValidator = require('../utils/inputValidators/user/req');
 const User = db.user;
 const Code = db.code;
 const Job = db.job;
+const App = db.application;
 
 require('dotenv').config();
 
@@ -221,6 +224,7 @@ module.exports = class UserController {
 
     static async getProfile(req, res, next) {
         try {
+            console.log(req.user);
             const user = await User.findOne({
                 where: {
                     email: req.user.email,
@@ -240,7 +244,8 @@ module.exports = class UserController {
 
     static async updateProfile(req, res, next) { //   Only the owner can update profile . We can check weather user is valid or not through jwt token 
         try {
-            if (Object.keys(req.body).length === 0 && Object.keys(req.files).length === 0) {
+
+            if (_.isEmpty(req.body) && _.isEmpty(req.files)) {
                 return res.status(400).send({ message: 'Update profile failed!\nThere is nothing to be updated' });
             }
             if (!req.user.email) {
@@ -325,7 +330,7 @@ module.exports = class UserController {
         }
     }
 
-    static async search(req, res, next) { // TODO search  TODO still 
+    static async search(req, res, next) { // TODO with context
         try {
             const { tags, jobType, minSalary, maxSalary } = req.query;
             const options = {
@@ -336,22 +341,19 @@ module.exports = class UserController {
             };
             if (tags) {
                 options.where.tags = {
-                    [Op.contains]: tags.split(',') // split by comma and create an array
+                    [Op.contains]: tags.split(',')
                 };
             }
             if (jobType) {
                 options.where.jobType = {
-                    [Op.contains]: jobType.split(',') // split by comma and create an array
+                    [Op.contains]: jobType.split(',')
                 };
             }
-            // filter by salary range if provided
             if (minSalary || maxSalary) {
                 options.where.salary = {};
-
                 if (minSalary) {
                     options.where.salary[Op.gte] = minSalary;
                 }
-
                 if (maxSalary) {
                     options.where.salary[Op.lte] = maxSalary;
                 }
@@ -366,4 +368,69 @@ module.exports = class UserController {
         }
     }
 
+    static async applyJob(req, res, next) {
+        try {
+            const { jobId } = req.params;
+            if (!jobId) {
+                return res.status(400).send({ message: 'Job id is required' });
+            }
+            const user = await User.findOne({ where: { email: req.user.email } });
+            if (!user) {
+                return res.status(400).send({ message: 'User not found' });
+            }
+            const job = await Job.findOne({ where: { id: jobId } });
+            if (!job) {
+                return res.status(404).send({ message: 'Job not found' });
+            }
+            await App.create({
+                jobId: jobId,
+                userId: user.id
+            })
+            return res.status(200).send({ message: `Applied successfully!` })
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    static async myApplications(req, res, next) {
+        try {
+            const user = await User.findOne(
+                {
+                    where: {
+                        email: req.user.email
+                    },
+                    include: {
+                        model: App
+                    }
+                });
+            if (!user) {
+                return res.status(400).send({ message: 'User not found' });
+            }
+            if (!user.applications) {
+                return res.status(404).send({ message: 'No apps found' });
+            }
+            return res.status(200).send({ message: 'Apps found', apps: user.applications });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    static async saveJob(req, res, next) { // TODO complete this endpoint
+        try {
+            const { jobId } = req.params;
+            if (!jobId) {
+                return res.status(400).send({ message: 'Job id is required' });
+            }
+            const user = await User.findOne({ where: { email: req.user.email } });
+            if (!user) {
+                return res.status(400).send({ message: 'User not found' });
+            }
+            await user.update({
+                saved: db.sequelize.fn('jsonb_insert', db.sequelize.col('saved'), '{-1}', jobId)
+            });
+            return res.status(200).send({ message: 'Job saved' });
+        } catch (err) {
+            next(err);
+        }
+    }
 }

@@ -54,7 +54,8 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             defaultValue: 'user'
         },
         saved: {
-            type: Sequelize.ARRAY(Sequelize.STRING)
+            type: Sequelize.ARRAY(Sequelize.STRING),
+            defaultValue: []
         }
     });
     return User;

@@ -15,12 +15,17 @@ router.get('/profile', isAuth, UserController.getProfile);
 
 router.post('/profile', isAuth, cpUpload, UserController.updateProfile);
 
-
 router.post('/req', isAuth, UserController.sendReq);
 
 router.get('/myjobs', isAuth, ContentController.getAllJob);
 
 router.get('/jobs', UserController.search);
+
+router.put('/apply/:jobId', isAuth, UserController.applyJob);
+
+router.get('/applications', isAuth, UserController.myApplications);
+
+router.put('/save/:jobId', isAuth, UserController.saveJob);
 
 
 

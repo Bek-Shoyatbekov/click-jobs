@@ -1,4 +1,4 @@
-const Joi = require('joi');  // TODO to write joi validator for req inputs
+const Joi = require('joi');  
 
 const reqSchema = Joi
     .object()
