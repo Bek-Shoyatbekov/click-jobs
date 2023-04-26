@@ -2,13 +2,18 @@ const multer = require('multer');
 
 const storage = multer.diskStorage({
     destination: function (req, file, callback) {
+        //specify the destination folder
         callback(null, './src/public/uploads');
     },
     filename: function (req, file, callback) {
-        callback(null, file.fieldname + '-' + Date.now() + '.' + file.originalname.split('.')[file.originalname.split(".").length - 1]);
+        //access the original name of the file
+        const originalName = file.originalname;
+        //modify the name as you wish
+        const modifiedName = Date.now() + '-' + originalName.replaceAll(' ', ''); //add a timestamp
+        //pass the modified name to the callback
+        callback(null, modifiedName);
     }
 });
-
 
 const upload = multer({
     storage: storage,
@@ -36,9 +41,5 @@ const upload = multer({
 
 })
 
-const cpUpload = upload.fields([
-    { name: 'image', maxCount: 5 },
-    { name: 'resume', maxCount: 1 }
-]);
 
-module.exports = cpUpload;
+module.exports = upload;

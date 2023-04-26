@@ -242,10 +242,57 @@ module.exports = class UserController {
         }
     }
 
+    static async uploadImage(req, res, next) {
+        try {
+            if (_.isEmpty(req.file)) {
+                return res.status(400).send({ message: 'No image uploaded!' });
+            }
+            const file = req.file;
+            if (!req.user.email) {
+                return res.status(400).send({ message: 'User not registered!' });
+            }
+            const user = await User.findOne({ where: { email: req.user.email } });
+            if (!user) {
+                return res.status(400).send({ message: 'User not found!' });
+            }
+            user.set({
+                image: file.path
+            });
+            await user.save();
+            //send a response
+            res.status(200).send('Image saved successfully');
+        } catch (err) {
+            next(err);
+        }
+    }
+    static async uploadResume(req, res, next) {
+        try {
+            if (_.isEmpty(req.file)) {
+                return res.status(400).send({ message: 'No image uploaded!' });
+            }
+            const file = req.file;
+            if (!req.user.email) {
+                return res.status(400).send({ message: 'User not registered!' });
+            }
+            const user = await User.findOne({ where: { email: req.user.email } });
+            if (!user) {
+                return res.status(400).send({ message: 'User not found!' });
+            }
+            user.set({
+                resume: file.path
+            });
+            await user.save();
+            //send a response
+            res.status(200).send('Resume saved successfully');
+        } catch (err) {
+            next(err);
+        }
+    }
+
     static async updateProfile(req, res, next) { //   Only the owner can update profile . We can check weather user is valid or not through jwt token 
         try {
 
-            if (_.isEmpty(req.body) && _.isEmpty(req.files)) {
+            if (_.isEmpty(req.body)) {
                 return res.status(400).send({ message: 'Update profile failed!\nThere is nothing to be updated' });
             }
             if (!req.user.email) {
@@ -263,13 +310,6 @@ module.exports = class UserController {
                 return res.status(400).send(`Inputs not valid: ${error}`)
             }
             const body = req.body;
-            let resume, userImage;
-            if (req.files.image) {
-                userImage = req.files['image'][0].path;
-            }
-            if (req.files.resume) {
-                resume = req.files['resume'][0].path;
-            }
             let hashedPassword;
             if (body.password) {
                 hashedPassword = await bcrypt.hash(body.password, 10);
@@ -280,8 +320,6 @@ module.exports = class UserController {
                     ...(body.email && { email: body.email }),
                     ...(body.phone && { phone: body.phone }),
                     ...(body.password && { password: hashedPassword }),
-                    image: userImage,
-                    resume: resume,
                     ...(body.bio && { bio: body.bio }),
                     ...(body.role && { role: body.role }),
                 },

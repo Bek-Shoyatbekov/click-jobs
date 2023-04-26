@@ -22,6 +22,8 @@ const User = db.user;
 const Job = db.job;
 const Req = db.req;
 const Application = db.application;
+const Image = db.image;
+const Resume = db.resume;
 
 
 //Relations
