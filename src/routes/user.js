@@ -11,8 +11,6 @@ const UserController = require('../controllers/user');
 
 router.get('/profile', isAuth, UserController.getProfile);
 
-// TODO Pay attention if user upload files again and again , your server can be crashed because there will be tone of files in uploads folder
-
 router.post('/profile', isAuth, UserController.updateProfile);
 
 router.post('/req', isAuth, UserController.sendReq);

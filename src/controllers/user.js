@@ -24,6 +24,10 @@ const { validate } = require('uuid');
 
 const reqInputValidator = require('../utils/inputValidators/user/req');
 
+const deleteFile = require('../utils/func/delete_file');
+
+const path = require('path');
+
 const User = db.user;
 const Code = db.code;
 const Job = db.job;
@@ -32,6 +36,7 @@ const App = db.application;
 require('dotenv').config();
 
 module.exports = class UserController {
+    constructor() { }
     static async signup(req, res, next) {
         try {
             let body;
@@ -245,7 +250,7 @@ module.exports = class UserController {
     static async uploadImage(req, res, next) {
         try {
             if (_.isEmpty(req.file)) {
-                return res.status(400).send({ message: 'No image uploaded!' });
+                return res.status(400).send({ message: 'No file uploaded!' });
             }
             const file = req.file;
             if (!req.user.email) {
@@ -254,21 +259,62 @@ module.exports = class UserController {
             const user = await User.findOne({ where: { email: req.user.email } });
             if (!user) {
                 return res.status(400).send({ message: 'User not found!' });
+            }
+            if (user.image.length > 0) {
+                const result = deleteFile(user.image);
+                if (result) {
+                    console.log('old file has been deleted')
+                } else {
+                    console.log('Error during delete old file')
+                }
             }
             user.set({
                 image: file.path
             });
             await user.save();
             //send a response
-            res.status(200).send('Image saved successfully');
+            res.setHeaders({ "status": "200" });
+            return res.status(200).send('Image saved successfully');
         } catch (err) {
             next(err);
         }
     }
+    // async upload(req, res, next, fileName) {
+    //     try {
+    //         if (_.isEmpty(req.file)) {
+    //             return res.status(400).send({ message: 'No file uploaded!' });
+    //         }
+    //         const file = req.file;
+    //         if (!req.user.email) {
+    //             return res.status(400).send({ message: 'User not registered!' });
+    //         }
+    //         const user = await User.findOne({ where: { email: req.user.email } });
+    //         if (!user) {
+    //             return res.status(400).send({ message: 'User not found!' });
+    //         }
+    //         if (user[fileName].length > 0) {
+    //             const result = deleteFile(user[fileName]);
+    //             if (result) {
+    //                 console.log('old file has been deleted')
+    //             } else {
+    //                 console.log('Error during delete old file')
+    //             }
+    //         }
+    //         user.set({
+    //             [`fileName`]: file.path
+    //         });
+    //         await user.save();
+    //         //send a response
+    //         return res.status(200).send('file saved successfully');
+    //     }
+    //     catch (err) {
+    //         next(err);
+    //     }
+    // }
     static async uploadResume(req, res, next) {
         try {
             if (_.isEmpty(req.file)) {
-                return res.status(400).send({ message: 'No image uploaded!' });
+                return res.status(400).send({ message: 'No file uploaded!' });
             }
             const file = req.file;
             if (!req.user.email) {
@@ -278,12 +324,21 @@ module.exports = class UserController {
             if (!user) {
                 return res.status(400).send({ message: 'User not found!' });
             }
+            if (user.resume) {
+                const result = deleteFile(user.resume);
+                if (result) {
+                    console.log('old file has been deleted')
+                } else {
+                    console.log('Error during delete old file')
+                }
+            }
             user.set({
                 resume: file.path
             });
             await user.save();
             //send a response
-            res.status(200).send('Resume saved successfully');
+            res.setHeaders({ "status": "200" });
+            return res.status(200).send('Resume saved successfully');
         } catch (err) {
             next(err);
         }
