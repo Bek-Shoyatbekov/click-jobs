@@ -74,6 +74,7 @@ module.exports = class UserController {
                 code: code
             });
             await verifyCode.save();
+            console.log(code);
             await sendEmail(email,
                 'User verification from Click Jobs',
                 `Click to verify your email`
