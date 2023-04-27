@@ -1,4 +1,5 @@
 // Import the functions you need from the SDKs you need
+// TODO create auth 2.0 with Google provider
 
 const { initializeApp, default: firebase } = require("firebase/app");
 

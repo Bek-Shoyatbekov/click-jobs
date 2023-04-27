@@ -32,6 +32,7 @@ const User = db.user;
 const Code = db.code;
 const Job = db.job;
 const App = db.application;
+const Saved = db.saved;
 
 require('dotenv').config();
 
@@ -261,7 +262,7 @@ module.exports = class UserController {
             if (!user) {
                 return res.status(400).send({ message: 'User not found!' });
             }
-            if (user.image.length > 0) {
+            if (user.image) {
                 const result = deleteFile(user.image);
                 if (result) {
                     console.log('old file has been deleted')
@@ -274,44 +275,12 @@ module.exports = class UserController {
             });
             await user.save();
             //send a response
-            res.setHeaders({ "status": "200" });
             return res.status(200).send('Image saved successfully');
         } catch (err) {
             next(err);
         }
     }
-    // async upload(req, res, next, fileName) {
-    //     try {
-    //         if (_.isEmpty(req.file)) {
-    //             return res.status(400).send({ message: 'No file uploaded!' });
-    //         }
-    //         const file = req.file;
-    //         if (!req.user.email) {
-    //             return res.status(400).send({ message: 'User not registered!' });
-    //         }
-    //         const user = await User.findOne({ where: { email: req.user.email } });
-    //         if (!user) {
-    //             return res.status(400).send({ message: 'User not found!' });
-    //         }
-    //         if (user[fileName].length > 0) {
-    //             const result = deleteFile(user[fileName]);
-    //             if (result) {
-    //                 console.log('old file has been deleted')
-    //             } else {
-    //                 console.log('Error during delete old file')
-    //             }
-    //         }
-    //         user.set({
-    //             [`fileName`]: file.path
-    //         });
-    //         await user.save();
-    //         //send a response
-    //         return res.status(200).send('file saved successfully');
-    //     }
-    //     catch (err) {
-    //         next(err);
-    //     }
-    // }
+
     static async uploadResume(req, res, next) {
         try {
             if (_.isEmpty(req.file)) {
@@ -338,7 +307,6 @@ module.exports = class UserController {
             });
             await user.save();
             //send a response
-            res.setHeaders({ "status": "200" });
             return res.status(200).send('Resume saved successfully');
         } catch (err) {
             next(err);
@@ -347,7 +315,6 @@ module.exports = class UserController {
 
     static async updateProfile(req, res, next) { //   Only the owner can update profile . We can check weather user is valid or not through jwt token 
         try {
-
             if (_.isEmpty(req.body)) {
                 return res.status(400).send({ message: 'Update profile failed!\nThere is nothing to be updated' });
             }
@@ -390,7 +357,7 @@ module.exports = class UserController {
             next(err);
         }
     }
-    //comment
+
     static async sendReq(req, res, next) {
         try {
             if (Object.keys(req.body).length == 0) {
@@ -509,7 +476,7 @@ module.exports = class UserController {
         }
     }
 
-    static async saveJob(req, res, next) { // TODO complete this endpoint
+    static async saveJob(req, res, next) {
         try {
             const { jobId } = req.params;
             if (!jobId) {
@@ -519,10 +486,46 @@ module.exports = class UserController {
             if (!user) {
                 return res.status(400).send({ message: 'User not found' });
             }
-            await user.update({
-                saved: db.sequelize.fn('jsonb_insert', db.sequelize.col('saved'), '{-1}', jobId)
-            });
+            await user.createSaved({ jobId: jobId });
             return res.status(200).send({ message: 'Job saved' });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    static async getSaved(req, res, next) {
+        try {
+            const user = await User.findOne({ where: { email: req.user.email } });
+            if (!user) {
+                return res.status(400).send({ message: 'User not found' });
+            }
+            const jobs = await Saved.findAll({
+                where: { userId: user.id },
+                include: {
+                    model: Job
+                }
+            });
+            if (!jobs) {
+                return res.status(404).send({ message: 'No jobs found' });
+            }
+            return res.status(200).send({ message: 'Jobs found', jobs: jobs });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    static async removeSavedJob(req, res, next) {
+        try {
+            const { jobId } = req.params;
+            if (!jobId) {
+                return res.status(400).send({ message: 'Job id is required' });
+            }
+            const user = await User.findOne({ where: { email: req.user.email } });
+            if (!user) {
+                return res.status(400).send({ message: 'User not found' });
+            }
+            await Saved.destroy({ where: { jobId: jobId } });
+            return res.status(200).send({ message: 'Job removed' });
         } catch (err) {
             next(err);
         }

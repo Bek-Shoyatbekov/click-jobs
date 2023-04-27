@@ -22,8 +22,8 @@ const User = db.user;
 const Job = db.job;
 const Req = db.req;
 const Application = db.application;
-const Image = db.image;
-const Resume = db.resume;
+const Saved = db.saved;
+
 
 
 //Relations
@@ -40,6 +40,13 @@ Application.belongsTo(Job);
 
 User.hasMany(Req);
 Req.belongsTo(User);
+
+User.hasMany(Saved);
+Saved.belongsTo(User);
+
+Saved.belongsTo(Job);
+Job.hasMany(Saved);
+
 
 
 app.use(express.json({ limit: '50mb' }));

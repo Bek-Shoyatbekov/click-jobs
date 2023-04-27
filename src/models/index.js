@@ -46,5 +46,6 @@ db.req = require('./req.model')(sequelize, DataTypes, Sequelize);
 db.job = require('./job.model')(sequelize, DataTypes, Sequelize);
 db.code = require('./code')(sequelize, DataTypes, Sequelize);
 db.application = require('./application')(sequelize, DataTypes, Sequelize);
+db.saved = require('./savedJobs')(sequelize, DataTypes, Sequelize);
 
 module.exports = db;

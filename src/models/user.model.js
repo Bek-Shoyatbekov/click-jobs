@@ -52,10 +52,6 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
         role: {
             type: DataTypes.ENUM('user', 'applicant', 'superadmin', 'banned'),
             defaultValue: 'user'
-        },
-        saved: {
-            type: Sequelize.ARRAY(Sequelize.STRING),
-            defaultValue: []
         }
     });
     return User;

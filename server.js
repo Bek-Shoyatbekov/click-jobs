@@ -10,7 +10,6 @@ const notFound = require('./src/utils/func/pageNotFound');
 
 const ErrorHandler = require('./src/utils/func/errorHandler');
 
-
 app.use('*', notFound);
 
 app.use(ErrorHandler);

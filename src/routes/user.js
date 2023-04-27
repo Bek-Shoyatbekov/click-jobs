@@ -23,7 +23,11 @@ router.put('/apply/:jobId', isAuth, UserController.applyJob);
 
 router.get('/applications', isAuth, UserController.myApplications);
 
-router.put('/save/:jobId', isAuth, UserController.saveJob);
+router.post('/save/:jobId', isAuth, UserController.saveJob);
+
+router.get('/saved', isAuth, UserController.getSaved);
+
+router.delete('/saved/:jobId', isAuth, UserController.removeSavedJob);
 
 router.post('/image', isAuth, upload.single('image'), UserController.uploadImage);
 
