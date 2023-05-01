@@ -17,6 +17,17 @@ const { env } = process;
 
 const app = express();
 
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+    windowMs: 1000,
+    max: 10,
+});
+
+app.use(limiter);
+
+
+
 
 const User = db.user;
 const Job = db.job;
