@@ -44,7 +44,12 @@ app.use(session({
     secret: env.SESSION_KEY,
     resave: false,
     saveUninitialized: false,
-    store: redisStore
+    store: redisStore,
+    cookie: {
+        secure: false,
+        httpOnly: false,
+        maxAge: 60 * 60 * 24 * 365 * 10
+    }
 }));
 
 
