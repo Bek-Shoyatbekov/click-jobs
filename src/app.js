@@ -12,19 +12,41 @@ const db = require('./models/index');
 
 const { env } = process;
 
-// const session = require('express-session');
-
+const session = require('express-session');
 
 const app = express();
 
+const { createClient } = require('redis');
+
+const RedisStore = require('connect-redis').default;
+
 const rateLimit = require('express-rate-limit');
+
+let redisClient = createClient({
+});
+
+redisClient.connect().catch(err => console.log(err))
+
+let redisStore = new RedisStore({
+    client: redisClient,
+    prefix: 'dapps'
+})
 
 const limiter = rateLimit({
     windowMs: 1000,
     max: 10,
 });
 
+
+
 app.use(limiter);
+app.use(session({
+    secret: env.SESSION_KEY,
+    resave: false,
+    saveUninitialized: false,
+    store: redisStore
+}));
+
 
 
 
@@ -67,23 +89,10 @@ app.use(express.static(path.join(__dirname, 'public/uploads')))
 process.env.ENV == 'dev' && app.use(morgan('dev'));
 
 
-
-
-// For Session
-// app.use(session({
-//     secret: env.SESSION_KEY,
-
-//     resave: false,
-
-//     saveUninitialized: true
-// }));
-
-// app.use(async (req, res, next) => {
-//     if (req.session.email && !req.session.user) {
-//         req.session.user = await User.findOne({ where: { email: req.session.email } });
-//     }
-//     next();
-// });
+app.use(async (req, res, next) => {
+    console.log(req.session);
+    next();
+});
 
 app.get('/', (req, res, next) => {
     try {
