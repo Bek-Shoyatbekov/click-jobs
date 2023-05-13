@@ -548,7 +548,6 @@ module.exports = class UserController {
 
         }
     }
-
     static async GetNotificationById(req, res, next) { //TODO get more noticed
         try {
 

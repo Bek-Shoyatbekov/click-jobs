@@ -18,30 +18,25 @@ const { env } = process;
 
 const session = require('express-session');
 
+const pool = require('./config/dbConfig');
+
+const pgSession = require('connect-pg-simple')(session)
+
+const connnectionString = `postgres://${pool.USER}:${pool.PASSWORD}@${pool.HOST}:${pool.PORT}/jobs`
+
+const sessionStore = new pgSession({
+    conString: connnectionString
+});
+
 const app = express();
-
-
-const { createClient } = require('redis');
-
-const RedisStore = require('connect-redis').default;
 
 const rateLimit = require('express-rate-limit');
 
-let redisClient = createClient({
-});
-
-redisClient.connect().catch(err => console.log(err))
-
-let redisStore = new RedisStore({
-    client: redisClient,
-    prefix: 'dapps'
-})
 
 const limiter = rateLimit({
     windowMs: 1000,
     max: 10,
 });
-
 
 
 app.use(limiter);
@@ -50,7 +45,7 @@ app.use(session({
     secret: env.SESSION_KEY,
     resave: false,
     saveUninitialized: false,
-    store: redisStore,
+    store: sessionStore,
     cookie: {
         secure: false,
         httpOnly: false,
