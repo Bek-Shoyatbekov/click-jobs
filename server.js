@@ -1,6 +1,10 @@
-const { createServer } = require('http');
+const { Server, createServer } = require('http');
+
 const app = require('./src/app.js');
+
 const db = require('./src/models/index.js');
+
+const socketio = require('socket.io');
 
 
 db.check();
@@ -15,12 +19,20 @@ app.use('*', notFound);
 app.use(ErrorHandler);
 
 
-
 require('dotenv').config();
 
-const server = createServer(app);
+const server = new Server(app);
+
+socketio(server);
 
 
-server.listen(process.env.PORT, () => {
-    process.env.ENV == 'dev' && console.log('Server running at ' + process.env.BASE_URL);
+
+server.listen(Number(process.env.PORT), () => {
+    process.env.ENV == 'dev' && console.log('Server running on port ' + (parseInt(process.env.PORT)));
 })
+
+
+
+
+
+

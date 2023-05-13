@@ -47,5 +47,6 @@ db.job = require('./job.model')(sequelize, DataTypes, Sequelize);
 db.code = require('./code')(sequelize, DataTypes, Sequelize);
 db.application = require('./application')(sequelize, DataTypes, Sequelize);
 db.saved = require('./savedJobs')(sequelize, DataTypes, Sequelize);
+db.notification = require('./notification')(sequelize, DataTypes, Sequelize);
 
 module.exports = db;

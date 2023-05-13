@@ -196,7 +196,6 @@ module.exports = class adminController {
             if (!user) return res.status(404).send({ message: 'User not found' });
             await user.destroy();
             return res.status(200).send({ message: 'User deleted' });
-
         } catch (err) {
             next(err);
         }

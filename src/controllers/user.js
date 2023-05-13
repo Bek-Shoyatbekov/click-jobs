@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 
 const _ = require('lodash');
 
+const io = require('../../server');
+
 const { Op } = require('sequelize');
 
 const signUpInputValidator = require('../utils/inputValidators/user/signup');
@@ -16,17 +18,12 @@ const updateInputValidator = require('../utils/inputValidators/user/update');
 
 const emailInputValidator = require('../utils/inputValidators/user/email');
 
-const resetPasswordInputValidator = require('../utils/inputValidators/user/code');
-
 const sendEmail = require('../utils/email_service/send_email');
-
-const { validate } = require('uuid');
 
 const reqInputValidator = require('../utils/inputValidators/user/req');
 
 const deleteFile = require('../utils/func/delete_file');
 
-const path = require('path');
 
 const User = db.user;
 const Code = db.code;
@@ -34,10 +31,8 @@ const Job = db.job;
 const App = db.application;
 const Saved = db.saved;
 
-require('dotenv').config();
 
 module.exports = class UserController {
-    constructor() { }
     static async signup(req, res, next) {
         try {
             let body;
@@ -56,16 +51,7 @@ module.exports = class UserController {
             if (exists) {
                 return res.status(400).send({ message: 'User already exists' });
             }
-            let token = generateAccessToken(body.email);
-            const hashedPassword = await bcrypt.hash(body.password, 10);
-            const user = await User.create({
-                username: body.username,
-                email: body.email,
-                password: hashedPassword,
-                role: body.role,
-                token: token
-            });
-            const result = await user.save();
+
             const email = body.email;
             const code = Math.floor(Math.random() * 10000)
                 .toString()
@@ -74,8 +60,8 @@ module.exports = class UserController {
                 userEmail: email,
                 code: code
             });
+            req.session.user = body;
             await verifyCode.save();
-            console.log(code);
             await sendEmail(email,
                 'User verification from Click Jobs',
                 `Click to verify your email`
@@ -92,6 +78,7 @@ module.exports = class UserController {
 
     static async verifyUserEmail(req, res, next) {
         try {
+            let body = req.session.user;
             const code = req.body.code;
             if (String(code).length != 4) {
                 return res.status(400).send({ message: 'Invalid verification code' });
@@ -100,13 +87,19 @@ module.exports = class UserController {
             if (!verifyCode) {
                 return res.status(400).send({ message: 'Invalid verification code' });
             }
-            const user = await User.findOne({ where: { email: verifyCode.userEmail } });
-            if (!user) {
-                return res.status(400).send({ message: 'Invalid verification code' });
-            }
-            const token = generateAccessToken(user.email);
-            user.token = token;
-            user.isVerified = true;
+
+            let token = generateAccessToken(body.email);
+            let token1 = generateAccessToken(body.email);
+
+            const hashedPassword = await bcrypt.hash(body.password, 10);
+            const user = await User.create({
+                username: body.username,
+                email: body.email,
+                password: hashedPassword,
+                role: body.role,
+                accessToken: token,
+                refreshToken: token1
+            });
             await user.save();
             await verifyCode.destroy();
             return res.status(200).send({ message: 'User has been verified', token: token });
@@ -197,10 +190,13 @@ module.exports = class UserController {
             } else {
                 let msg = '';
                 const token = generateAccessToken(user.email);
+                const token1 = generateAccessToken(user.email);
+
                 if (!user.isVerified) {
                     msg = 'Please verify your email';
                 }
-                user.token = token;
+                user.accessToken = token;
+                user.refreshToken = token1;
                 await user.save();
                 return res.status(200).send({
                     message: `Signed in \n` + msg,
@@ -221,7 +217,7 @@ module.exports = class UserController {
             if (!user) {
                 return res.status(400).send({ message: 'User not registered!' });
             }
-            user.token = '';
+            user.accessToken = '';
             await user.save();
             return res.status(200).send({ message: 'Logged out' });
         } catch (err) {
@@ -231,7 +227,6 @@ module.exports = class UserController {
 
     static async getProfile(req, res, next) {
         try {
-            console.log(req.user);
             const user = await User.findOne({
                 where: {
                     email: req.user.email,
@@ -240,7 +235,7 @@ module.exports = class UserController {
                     }
                 }
             });
-            if (!user || user.token == "") {
+            if (!user || user.accessToken == "") {
                 return res.status(400).send({ message: 'User not found!' });
             }
             return res.status(200).send(user);
@@ -322,7 +317,7 @@ module.exports = class UserController {
                 return res.status(400).send({ message: 'User not registered!' });
             }
             const user = await User.findOne({ where: { email: req.user.email } });
-            if (user.token == '') {
+            if (user.accessToken == '') {
                 return res.status(400).send({ message: 'User not registered!' });
             }
             if (user.role != 'superadmin' && !user) {
@@ -391,9 +386,9 @@ module.exports = class UserController {
         }
     }
 
-    static async search(req, res, next) { // TODO with context
+    static async search(req, res, next) {
         try {
-            const { tags, jobType, minSalary, maxSalary } = req.query;
+            const { tags, jobType, minSalary, maxSalary, keyword } = req.query;
             const options = {
                 where: {},
                 include: {
@@ -419,6 +414,21 @@ module.exports = class UserController {
                     options.where.salary[Op.lte] = maxSalary;
                 }
             }
+            if (keyword) {
+                options.where[Op.or] = [
+                    {
+                        description: {
+                            [Op.like]: "%" + keyword + "%",
+                        },
+                    },
+                    {
+                        title: {
+                            [Op.like]: "%" + keyword + "%",
+                        },
+                    },
+                ];
+            }
+
             const jobs = await Job.findAll(options);
             if (!jobs) {
                 return res.status(404).send({ message: 'No jobs found' });
@@ -528,6 +538,22 @@ module.exports = class UserController {
             return res.status(200).send({ message: 'Job removed' });
         } catch (err) {
             next(err);
+        }
+    }
+
+    static async GetNotifications(req, res, next) { // TODO get noticed
+        try {
+
+        } catch (err) {
+
+        }
+    }
+
+    static async GetNotificationById(req, res, next) { //TODO get more noticed
+        try {
+
+        } catch (err) {
+
         }
     }
 }

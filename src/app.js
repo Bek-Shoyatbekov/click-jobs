@@ -4,17 +4,22 @@ const morgan = require('morgan');
 
 const path = require('path');
 
-const fs = require("fs");
-
 require('dotenv').config();
 
+const passport = require('passport');
+
+require('./utils/func/passport');
+
 const db = require('./models/index');
+
+const compression = require('compression');
 
 const { env } = process;
 
 const session = require('express-session');
 
 const app = express();
+
 
 const { createClient } = require('redis');
 
@@ -40,6 +45,7 @@ const limiter = rateLimit({
 
 
 app.use(limiter);
+app.use(compression())
 app.use(session({
     secret: env.SESSION_KEY,
     resave: false,
@@ -52,6 +58,12 @@ app.use(session({
     }
 }));
 
+app.set('view engine', 'ejs');
+app.set('views', './src/views');
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 
 
@@ -61,29 +73,55 @@ const Job = db.job;
 const Req = db.req;
 const Application = db.application;
 const Saved = db.saved;
-
+const Notification = db.notification;
 
 
 //Relations
 
 User.hasMany(Job);
-Job.belongsTo(User);
+Job.belongsTo(User, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
 
 User.hasMany(Application);
-Application.belongsTo(User);
+Application.belongsTo(User, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
 
 
 Job.hasMany(Application);
 Application.belongsTo(Job);
 
 User.hasMany(Req);
-Req.belongsTo(User);
+Req.belongsTo(User, {
+    onDelete: 'CASCADE',
+});
 
 User.hasMany(Saved);
-Saved.belongsTo(User);
+Saved.belongsTo(User, {
+    onDelete: 'CASCADE',
+});
 
 Saved.belongsTo(Job);
-Job.hasMany(Saved);
+Job.hasMany(Saved, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+User.hasMany(Notification);
+Notification.belongsTo(User, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+Job.hasMany(Notification);
+Notification.belongsTo(Job, {
+    onDelete: 'CASCADE',
+});
+
+
 
 
 
@@ -94,18 +132,9 @@ app.use(express.static(path.join(__dirname, 'public/uploads')))
 process.env.ENV == 'dev' && app.use(morgan('dev'));
 
 
-app.use(async (req, res, next) => {
-    console.log(req.session);
-    next();
-});
-
-app.get('/', (req, res, next) => {
+app.get('/google', async (req, res, next) => {
     try {
-        return res.send(
-            `
-        <h1>Home</h1>
-        `
-        )
+        return res.render('pages/auth')
     } catch (err) {
         next(err);
     }
