@@ -69,6 +69,8 @@ const Req = db.req;
 const Application = db.application;
 const Saved = db.saved;
 const Notification = db.notification;
+const Message = db.message;
+const Network = db.network;
 
 
 //Relations
@@ -118,6 +120,11 @@ Notification.belongsTo(Job, {
 
 
 
+User.hasMany(Network, { onDelete: "CASCADE" });
+Network.belongsTo(User);
+
+
+
 
 
 app.use(express.json({ limit: '50mb' }));
@@ -125,6 +132,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public/uploads')))
 
 process.env.ENV == 'dev' && app.use(morgan('dev'));
+
 
 
 app.get('/google', async (req, res, next) => {

@@ -1,14 +1,14 @@
-const { Server, createServer } = require('http');
+const { createServer } = require('http');
 
 const app = require('./src/app.js');
 
 const db = require('./src/models/index.js');
 
-const socketio = require('socket.io');
 
 
 db.check();
-// db.syncDB();  // DO NOT TOUCH
+// db.syncDB(); // DO NOT TOUCH
+
 
 const notFound = require('./src/utils/func/pageNotFound');
 
@@ -18,21 +18,22 @@ app.use('*', notFound);
 
 app.use(ErrorHandler);
 
-
 require('dotenv').config();
 
-const server = new Server(app);
+const server = createServer(app);
 
-socketio(server);
+const { Server } = require('socket.io');
 
+const IO = new Server(server);
+
+const SocketManager = require('./src/utils/socket/socket.io');
+
+const io = new SocketManager(IO);
 
 
 server.listen(Number(process.env.PORT), () => {
     process.env.ENV == 'dev' && console.log('Server running on port ' + (parseInt(process.env.PORT)));
 })
-
-
-
 
 
 

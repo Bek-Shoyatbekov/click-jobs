@@ -11,9 +11,6 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             maxLength: 200,
             allowNull: false,
         },
-        google_id: {
-            type: DataTypes.STRING
-        },
         bio: {
             type: DataTypes.STRING,
             minLength: 10,

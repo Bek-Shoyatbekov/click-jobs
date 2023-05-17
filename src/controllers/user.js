@@ -4,9 +4,11 @@ const bcrypt = require('bcryptjs');
 
 const _ = require('lodash');
 
-const io = require('../../server');
-
 const { Op } = require('sequelize');
+
+const u4 = require('uuid');
+
+const io = require('../utils/socket/socket.io');
 
 const signUpInputValidator = require('../utils/inputValidators/user/signup');
 
@@ -30,6 +32,8 @@ const Code = db.code;
 const Job = db.job;
 const App = db.application;
 const Saved = db.saved;
+const Namespace = db.namespace;
+const Message = db.message;
 
 
 module.exports = class UserController {
@@ -51,7 +55,6 @@ module.exports = class UserController {
             if (exists) {
                 return res.status(400).send({ message: 'User already exists' });
             }
-
             const email = body.email;
             const code = Math.floor(Math.random() * 10000)
                 .toString()
@@ -87,12 +90,13 @@ module.exports = class UserController {
             if (!verifyCode) {
                 return res.status(400).send({ message: 'Invalid verification code' });
             }
-
-            let token = generateAccessToken(body.email);
-            let token1 = generateAccessToken(body.email);
+            const userId = u4.v4();
+            let token = generateAccessToken(userId, body.email);
+            let token1 = generateAccessToken(userId, body.email);
 
             const hashedPassword = await bcrypt.hash(body.password, 10);
             const user = await User.create({
+                id: userId,
                 username: body.username,
                 email: body.email,
                 password: hashedPassword,
@@ -189,8 +193,8 @@ module.exports = class UserController {
                 return res.status(401).send({ message: 'Email or password  invalid' });
             } else {
                 let msg = '';
-                const token = generateAccessToken(user.email);
-                const token1 = generateAccessToken(user.email);
+                const token = generateAccessToken(user.id, user.email);
+                const token1 = generateAccessToken(user.id, user.email);
 
                 if (!user.isVerified) {
                     msg = 'Please verify your email';
@@ -301,7 +305,6 @@ module.exports = class UserController {
                 resume: file.path
             });
             await user.save();
-            //send a response
             return res.status(200).send('Resume saved successfully');
         } catch (err) {
             next(err);
@@ -541,14 +544,32 @@ module.exports = class UserController {
         }
     }
 
-    static async GetNotifications(req, res, next) { // TODO get noticed
+    static async getChats(req, res, next) {
+        try {
+            const chats = await Namespace.findAll({
+                where: { userId: req.user.userId },
+                include: [{
+                    model: User,
+                    required: false
+                }]
+            });
+            if (!chats) {
+                return res.status(404).send({ message: 'No chats found' });
+            }
+            return res.status(200).send({ message: 'Chats found', chats: chats });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    static async getNotifications(req, res, next) { // TODO get noticed
         try {
 
         } catch (err) {
 
         }
     }
-    static async GetNotificationById(req, res, next) { //TODO get more noticed
+    static async getNotificationById(req, res, next) { //TODO get more noticed
         try {
 
         } catch (err) {

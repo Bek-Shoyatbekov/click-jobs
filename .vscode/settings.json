@@ -10,5 +10,9 @@
   ],
   "cSpell.enableFiletypes": [
     "!javascript"
-  ]
+  ],
+  "todo-tree.tree.showBadges": false,
+  "todo-tree.tree.disableCompactFolders": true,
+  "todo-tree.tree.showCountsInTree": false,
+  "todo-tree.tree.scanMode": "workspace"
 }

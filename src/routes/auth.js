@@ -1,7 +1,5 @@
 const User = require('../controllers/user');
 
-const authenticateToken = require('../middlewares/auth/authenticateToken');
-
 const passport = require('passport');
 
 const router = require('express').Router()
@@ -12,13 +10,12 @@ router.post('/signup', User.signup);
 
 router.post('/signin', User.signin);
 
-
 router.get('/google',
     passport.authenticate('google', { scope: ['profile', 'email'] }))
 
 router.get('/google/callback',
     passport.authenticate('google', { failureMessage: "Something went wrong" }),
-    (req, res, next) => {
+    async (req, res, next) => {
         return res.send({ message: "User login", token: req.user.accessToken });
     }
 )

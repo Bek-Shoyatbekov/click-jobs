@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             type: DataTypes.UUID,
             defaultValue: Sequelize.UUIDV4,
             primaryKey: true,
-        },
+        },//TODO recived and sent properties are inneed of 
         text: {
             type: DataTypes.STRING,
             allowNull: false,

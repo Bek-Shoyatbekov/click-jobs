@@ -1,12 +1,13 @@
 const express = require('express');
 
-
 const router = express.Router();
 
 const upload = require('../utils/file_upload_service/setup');
 
 const isAuth = require('../middlewares/auth/authenticateToken');
+
 const ContentController = require('../controllers/content');
+
 const UserController = require('../controllers/user');
 
 router.get('/profile', isAuth, UserController.getProfile);
@@ -33,6 +34,7 @@ router.post('/image', isAuth, upload.single('image'), UserController.uploadImage
 
 router.post('/resume', isAuth, upload.single('resume'), UserController.uploadResume);
 
+router.get('/chats', isAuth, UserController.getChats);
 
 
 
