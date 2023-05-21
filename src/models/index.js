@@ -3,6 +3,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const dbConfig = require('../config/dbConfig');
 require('dotenv').config();
 
+
 //database name is discover
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     host: dbConfig.HOST,
@@ -34,6 +35,7 @@ const syncDB = (val) => {
             console.log(`There is Error in sync db...`);
         });
 }
+
 const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;

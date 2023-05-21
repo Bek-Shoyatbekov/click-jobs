@@ -4,6 +4,7 @@ const morgan = require('morgan');
 
 const path = require('path');
 
+
 require('dotenv').config();
 
 const passport = require('passport');
@@ -22,12 +23,6 @@ const pool = require('./config/dbConfig');
 
 const pgSession = require('connect-pg-simple')(session)
 
-const connnectionString = `postgres://${pool.USER}:${pool.PASSWORD}@${pool.HOST}:${pool.PORT}/jobs`
-
-const sessionStore = new pgSession({
-    conString: connnectionString
-});
-
 const app = express();
 
 const rateLimit = require('express-rate-limit');
@@ -38,14 +33,18 @@ const limiter = rateLimit({
     max: 10,
 });
 
-
 app.use(limiter);
 app.use(compression())
+
 app.use(session({
-    secret: env.SESSION_KEY,
     resave: false,
     saveUninitialized: false,
-    store: sessionStore,
+    store: new pgSession({
+        conString: process.env.DATABASE_URL,
+        tableName: 'session'
+    }),
+
+    secret: process.env.secret,
     cookie: {
         secure: false,
         httpOnly: false,
@@ -132,7 +131,6 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public/uploads')))
 
 process.env.ENV == 'dev' && app.use(morgan('dev'));
-
 
 
 app.get('/google', async (req, res, next) => {
