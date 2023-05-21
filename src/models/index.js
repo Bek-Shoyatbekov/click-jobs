@@ -1,6 +1,8 @@
 //importing modules
 const { Sequelize, DataTypes } = require('sequelize');
+
 const dbConfig = require('../config/dbConfig');
+
 require('dotenv').config();
 
 

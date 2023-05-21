@@ -19,8 +19,6 @@ const { env } = process;
 
 const session = require('express-session');
 
-const pool = require('./config/dbConfig');
-
 const pgSession = require('connect-pg-simple')(session)
 
 const app = express();
@@ -40,11 +38,11 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: new pgSession({
-        conString: process.env.DATABASE_URL,
+        conString: env.DATABASE_URL,
         tableName: 'session'
     }),
 
-    secret: process.env.secret,
+    secret: env.secret,
     cookie: {
         secure: false,
         httpOnly: false,
@@ -68,7 +66,6 @@ const Req = db.req;
 const Application = db.application;
 const Saved = db.saved;
 const Notification = db.notification;
-const Message = db.message;
 const Network = db.network;
 
 
