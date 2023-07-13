@@ -18,9 +18,9 @@ module.exports = class ContentController {
                 return res.status(400).send({ message: 'No inputs!' });
             }
             const applicant = await User.findOne({ where: { email: req.user.email } });
-            // if (!applicant || applicant.role == 'user') {
-            //     return res.status(403).send({ message: 'You can not post job' });
-            // }
+             if (!applicant || applicant.role == 'user') {
+                 return res.status(403).send({ message: 'You can not post job' });
+            }
             const { error } = createJobInputValidator(req.body);
             if (error) {
                 return res.status(400).send({ message: error });
